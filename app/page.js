@@ -1,95 +1,51 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import ImageSlider from '@/components/ImageSlider';
+import CustomizableCard from '@/components/CustomizableCard';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const sliderImages = [
+    { src: '/images/sample/1.jpg', alt: '샘플 이미지 1' },
+    { src: '/images/sample/2.jpg', alt: '샘플 이미지 2' },
+    { src: '/images/sample/3.jpg', alt: '샘플 이미지 3' },
+  ];
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ width: '100%', margin: '0.5rem 0' }}>
+        <ImageSlider images={sliderImages} sliderHeight="150px" autoPlayDefault={true} />
+      </div>
+
+      <div className="container" style={{ width: '95%', height: '300px', margin: '0.5rem auto', border: '1px solid black', padding: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+        <CustomizableCard
+          title="신축 입주 청소"
+          description="설명이 들어갑니다"
+          imageUrl="/images/Icons-3.png"
+          imageAlt="Card image"
+          backgroundColor="#2D61E3"
+        />
+        <CustomizableCard
+          title="이사 청소"
+          description="설명이 들어갑니다"
+          imageUrl="/images/Icons-4.png"
+          imageAlt="Card image"
+          backgroundColor="#2DA3E3"
+        />
+        <CustomizableCard
+          title="준공 리모델링 청소"
+          description="설명이 들어갑니다"
+          imageUrl="/images/Icons-1.png"
+          imageAlt="Card image"
+          backgroundColor="#65D69F"
+        />
+        <CustomizableCard
+          title="상가&사무실 청소"
+          description="설명이 들어갑니다"
+          imageUrl="/images/Icons-2.png"
+          imageAlt="Card image"
+          backgroundColor="#8957E1"
+        />
+      </div>
     </div>
   );
 }
