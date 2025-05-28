@@ -14,7 +14,7 @@ const Header = () => {
               <img
               src="/images/logo.png"
               alt="Logo"
-              style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+              style={{ width: '40px', height: '40px', objectFit: 'contain', verticalAlign: 'middle' }}
               />
             </div>
             <span style={{ fontSize: '13px', fontWeight: '700', color: '#4A5568' }}>
@@ -29,7 +29,7 @@ const Header = () => {
               <img
                 src="/images/file-02.png"
                 alt="File Icon"
-                style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                style={{ width: '24px', height: '24px', objectFit: 'contain', verticalAlign: 'middle' }}
               />
             </div>
             <span style={{ fontSize: '13px', fontWeight: '500', color: '#4A5568' }}>

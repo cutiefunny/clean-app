@@ -3,6 +3,7 @@
 import ImageSlider from '@/components/ImageSlider';
 import CustomizableCard from '@/components/CustomizableCard';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   const sliderImages = [
@@ -25,7 +26,7 @@ export default function Home() {
         <ImageSlider images={sliderImages} sliderHeight="150px" autoPlayDefault={true} />
       </div>
 
-      <div className="container" style={{ width: '95%', height: '300px', margin: '0.5rem auto', border: '1px solid black', padding: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+      <div className="container" style={{ width: '95%', height: '320px', margin: '0.5rem auto', border: '1px solid black', padding: '0.5rem', paddingTop: '0.8rem', paddingBottom: '0.8rem', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
         {cardData.map((card, index) => (
           <CustomizableCard
             key={index}
@@ -37,6 +38,9 @@ export default function Home() {
           />
         ))}
       </div>
+      <footer style={{ width: '100%', marginTop: 'auto', padding: '0.5rem'}}>
+        <Footer />
+      </footer>
     </div>
   );
 }

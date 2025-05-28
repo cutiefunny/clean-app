@@ -1,0 +1,40 @@
+.callCenter {
+    top: 30px;
+    left: 20px;
+    border-radius: 30px;
+    gap: 6px;
+    padding: 7px;
+    background-color: #F4F5F6;
+    font-family: 'Pretendard';
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    margin-right: 10px;
+    width:100%;
+}
+
+.phoneNumber {
+    color: #2DA3E3;
+    font-weight: 600;
+}
+
+.company {
+    font-family: 'Pretendard';
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    text-align: left;
+}
+
+.address {
+    margin-top: 10px;
+    font-family: 'Pretendard';
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 140%;
+    letter-spacing: 2%;
+    text-align: left;
+    color: #AAAAAA;
+}
