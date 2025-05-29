@@ -25,10 +25,10 @@ const ReviewCard = ({ review }) => {
       <div className={styles.cardHeader}>
         <div>
           <h3 className={styles.location}>{review.location}</h3>
-          <p className={styles.serviceType}>{review.serviceType}</p>
-        </div>
-        <div className={styles.rating}>
+          <span className={styles.serviceType}>{review.serviceType}</span>
+          <span className={styles.rating}>
           ⭐ {review.rating.toFixed(1)}
+            </span>
         </div>
       </div>
       <p className={styles.reviewText}>{review.text}</p>
@@ -38,7 +38,7 @@ const ReviewCard = ({ review }) => {
             <Image
               src={imgSrc}
               alt={`${review.location} 리뷰 이미지 ${index + 1}`}
-              width={300} // placeholder 이미지 비율에 맞춤, 실제 이미지 크기에 따라 조절
+              width={200} // placeholder 이미지 비율에 맞춤, 실제 이미지 크기에 따라 조절
               height={200}
               className={styles.reviewImage}
               onError={(e) => e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error'} // 이미지 로드 실패 시 대체
@@ -56,30 +56,24 @@ const ReviewSlider = ({ reviews }) => {
     return <p>표시할 리뷰가 없습니다.</p>;
   }
 
-  return (
+return (
     <div className={styles.sliderContainer}>
-      <Swiper
-        // Swiper 모듈 등록
-        modules={[Pagination, A11y, Autoplay]} // 자동 재생을 원하면 Autoplay 추가
-        spaceBetween={15} // 슬라이드 사이 간격 (px)
-        slidesPerView={1}   // 한 번에 보여줄 슬라이드 개수
-        pagination={{ clickable: true }} // 하단 점(dots) 클릭으로 이동 가능
-        loop={reviews.length > 1} // 리뷰가 1개 초과일 때 무한 루프 (선택 사항)
-        // autoplay={{ // 자동 재생 설정 (선택 사항)
-        //   delay: 3000, // 3초마다 슬라이드
-        //   disableOnInteraction: false, // 사용자 상호작용 후에도 자동 재생 유지
-        // }}
-        grabCursor={true} // 마우스 오버 시 잡는 커서 모양
-        // Swiper의 터치 이벤트가 기본적으로 활성화되어 있습니다.
-      >
+        <Swiper
+        modules={[Pagination, A11y, Autoplay]}
+        slidesPerView={'auto'}
+        centeredSlides={false}
+        loop={reviews.length > 1} // 리뷰가 1개 초과일 때만 루프
+        grabCursor={true}
+        spaceBetween={1} // <<--- 이 값을 조절하세요 (예: 10, 15, 20 등, 단위는 px)
+        >
         {reviews.map((review) => (
-          <SwiperSlide key={review.id} className={styles.swiperSlide}>
+            <SwiperSlide key={review.id} className={styles.swiperSlide}>
             <ReviewCard review={review} />
-          </SwiperSlide>
+            </SwiperSlide>
         ))}
-      </Swiper>
+        </Swiper>
     </div>
-  );
+    );
 };
 
 export default ReviewSlider;
