@@ -75,3 +75,31 @@
   font-size: 20px; /* 오른쪽 화살표 크기 */
   color: #c7c7cc; /* iOS 기본 화살표 색상과 유사하게 */
 }
+
+.eventDetailContent {
+  padding: 20px;
+  background-color: #ffffff;
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.eventDetailContent h2 {
+  font-size: 22px;
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.eventDetailContent p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #555;
+}
+
+.eventImage {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
