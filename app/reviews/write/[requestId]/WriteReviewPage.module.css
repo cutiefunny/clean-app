@@ -1,0 +1,161 @@
+/* app/reviews/write/[requestId]/WriteReviewPage.module.css */
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0f0f5; /* 이미지와 유사한 페이지 배경색 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.formContainer {
+  background-color: #ffffff;
+  margin: 16px;
+  padding: 24px 20px;
+  border-radius: 12px; /* 이미지와 유사한 둥근 모서리 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-grow: 1; /* 헤더, 푸터 제외한 나머지 공간 차지 */
+}
+
+/* 별점 */
+.ratingSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ratingSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.starRatingContainer { /* 별들을 감싸는 전체 컨테이너 */
+  display: flex; /* 별 이미지를 가로로 나열 */
+  align-items: center;
+  cursor: pointer;
+  touch-action: pan-y; /* 세로 스크롤은 허용, 가로 드래그는 직접 처리 */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  padding: 5px 0; /* 위아래 약간의 패딩 */
+}
+
+.starImageWrapper {
+  /* 각 별 이미지(Image 컴포넌트)를 감싸는 div */
+  /* 이미지 간 간격을 여기서 조절할 수 있습니다. */
+  padding: 0 3px; /* 예시: 별 이미지 좌우 간격 */
+  /* Image 컴포넌트는 기본적으로 display:inline-block처럼 동작하여
+     약간의 공백이 생길 수 있으므로, 필요시 line-height:0 등을 적용할 수 있습니다.
+     하지만 display:flex를 부모(.starRatingContainer)에 사용했으므로 크게 문제되지 않을 수 있습니다. */
+}
+
+.starImage {
+  /* next/image 컴포넌트에 직접 적용될 스타일 (필요시) */
+  /* width와 height는 Image 컴포넌트의 props로 지정했으므로 CSS에서 필수는 아님 */
+  /* display: block; 이미지가 인라인 속성으로 인한 여백을 갖지 않도록 */
+}
+
+/* 사진 업로드 */
+.photoUploadSection {
+  display: flex;
+  justify-content: center; /* 가운데 정렬 */
+  gap: 16px; /* 박스 사이 간격 */
+  margin-bottom: 24px;
+}
+
+.photoUploadBox {
+  width: 100px; /* 정사각형 모양 */
+  height: 100px;
+  border: 2px dashed #d0d0d0;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px; /* '+' 아이콘 크기 */
+  color: #b0b0b0;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s;
+  overflow: hidden; /* 이미지가 넘치지 않도록 */
+  position: relative;
+}
+
+.photoUploadBox:hover {
+  background-color: #f0f0f0;
+}
+
+.photoPreview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지가 박스에 꽉 차도록 */
+}
+
+
+/* 텍스트 리뷰 */
+.textReviewSection {
+  margin-bottom: 20px;
+  position: relative; /* 글자 수 표시를 위해 */
+}
+
+.textArea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical; /* 세로 크기만 조절 가능 */
+  box-sizing: border-box;
+  min-height: 120px; /* 최소 높이 */
+}
+
+.charCount {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 4px;
+  /* position: absolute; */ /* 필요에 따라 textarea 내부에 위치시킬 수도 있음 */
+  /* bottom: 10px; */
+  /* right: 10px; */
+}
+
+/* 안내 문구 */
+.guidelines {
+  font-size: 0.8rem;
+  color: #777;
+  line-height: 1.5;
+}
+
+.guidelines p {
+  margin: 4px 0;
+}
+
+/* 저장 버튼 (푸터) */
+.footer {
+  padding: 16px;
+  background-color: #f0f0f5; /* 페이지 배경색과 동일하게 하거나 다르게 설정 가능 */
+  /* position: sticky; */ /* 하단 고정 효과를 원할 경우 */
+  /* bottom: 0; */
+  /* width: 100%; */
+}
+
+.saveButton {
+  background-color: #2F80ED; /* 이미지의 파란색 버튼 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 0; /* 상하 패딩 */
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+  background-color: #1a6fcf;
+}

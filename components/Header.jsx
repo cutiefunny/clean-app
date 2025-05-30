@@ -23,7 +23,7 @@ const Header = () => {
             </div>
 
             {/* Right Section */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => window.location.href = '/review'}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => window.location.href = '/requests'}>
             <div style={{ flexShrink: '0' }}>
               {/* File Icon Image */}
               <img

@@ -1,0 +1,84 @@
+/* components/RequestCard.module.css */
+.card {
+  background-color: #ffffff;
+  border-radius: 12px; /* 이미지와 유사한 둥근 모서리 */
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 은은한 그림자 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.serviceType {
+  font-size: 1.25rem; /* '입주청소' 글자 크기 */
+  font-weight: bold;
+  color: #222;
+}
+
+.detailsLink {
+  font-size: 0.875rem; /* '자세히 보기' 글자 크기 */
+  color: #555;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.detailsLink:hover {
+  text-decoration: underline;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: auto 1fr; /* 레이블과 값 */
+  gap: 8px 12px; /* 행 간격, 열 간격 */
+  margin-bottom: 20px;
+}
+
+.infoItem {
+  display: contents; /* 그리드 아이템처럼 행동하지만, 실제로는 자식들이 그리드 셀에 배치됨 */
+}
+
+.infoLabel {
+  font-size: 0.875rem;
+  color: #777; /* 레이블 색상 */
+  text-align: left;
+  white-space: nowrap;
+}
+
+.infoValue {
+  font-size: 0.9375rem;
+  color: #333;
+  text-align: left;
+  font-weight: 500;
+}
+
+.reviewButton {
+  background-color: #2DA3E3; /* 이미지의 파란색과 유사하게 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0; /* 상하 패딩, 좌우는 width 100%로 채움 */
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s ease;
+  margin-top: auto; /* 버튼을 카드 하단에 위치시키도록 (flex-grow 와 함께 사용 시) */
+}
+
+.reviewButtonReverse {
+  background-color: #FFFFFF; /* 흰색 배경 */
+  color: #2DA3E3; /* 파란색 글자 */
+  border: 1px solid #2DA3E3; /* 파란색 테두리 */
+}
+
+.reviewButton:hover {
+  background-color: #1a6fcf; /* 호버 시 약간 어둡게 */
+}

@@ -1,0 +1,48 @@
+/* app/requests/RequestListPage.module.css */
+.listContainer {
+  width: 100%;
+  max-width: 600px; /* 목록 최대 너비 */
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0f0f5; /* 페이지 배경색 */
+  min-height: calc(100vh - 60px); /* 헤더 높이 제외 */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* 카드 사이의 간격 */
+}
+
+.requestCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease-in-out;
+}
+
+.requestCard:hover {
+  transform: translateY(-2px);
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.cardInfo {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 4px 0;
+}
+
+.chevron {
+  font-size: 1.5rem;
+  color: #c7c7cc;
+}
