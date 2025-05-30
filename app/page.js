@@ -7,6 +7,15 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import styles from './page.module.css'; // CSS 모듈을 사용하여 스타일링
 import Accordion from '@/components/Accordion';
+import FireStarter from '@/components/fireStarter';
+import { db, auth } from '../lib/firebase/clientApp';
+import {
+  collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot,
+  serverTimestamp // serverTimestamp 임포트 추가
+} from 'firebase/firestore';
+
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 export default function Home() {
 
@@ -105,7 +114,7 @@ export default function Home() {
         ))}
       </div>
 
-      <div style={{ width: '100%'}}>
+      <div style={{ width: '100%'}} onClick={() => window.location.href = '/events'}>
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', paddingBottom: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>이벤트</h2>
         </div>
@@ -125,6 +134,11 @@ export default function Home() {
         </div>
         <Accordion items={faqData} sectionTitle="고객 지원" />
       </div>
+
+      {/* Uncomment the following line to include the FireStarter component */}
+      {/* <div style={{ width: '100%', paddingBottom: '1rem' }}>
+        <FireStarter />
+      </div> */}
 
       <footer style={{ width: '100%', marginTop: 'auto', padding: '0.5rem'}}>
         <Footer />
