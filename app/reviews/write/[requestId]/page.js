@@ -166,20 +166,34 @@ export default function WriteReviewPage() {
       return;
     }
 
-    const reviewData = {
-      requestId,
+    const reviewDataToSave = {
+      requestId, // 어떤 신청 건에 대한 리뷰인지 연결
       rating,
       text: reviewText,
-      photos: photos.map(file => file.name), // 실제로는 업로드 후 URL 또는 파일 참조 저장
+      // photos: 실제로는 업로드된 이미지 URL 배열 저장
+      imageUrls: photos.map((_, index) => `/images/sample/review-photo-${index + 1}.jpg`), // 임시 이미지 경로
       createdAt: new Date().toISOString(),
+      // 여기에 추가적으로 user 정보 (authorId, authorName 등)도 저장해야 합니다.
+      // 예: authorId: auth.currentUser.uid (로그인 기능이 구현되어 있다고 가정)
     };
 
-    console.log("Submitting review:", reviewData);
-    // TODO: 실제 Firebase Firestore 또는 백엔드 API로 리뷰 데이터 전송
-    // 예: await saveReviewToFirestore(reviewData);
+    console.log("Submitting review:", reviewDataToSave);
+    // <<<< 실제 저장 로직 시작 >>>>
+    // 예시: Firestore에 저장하고 생성된 review 문서 ID를 받아옴
+    // const newReviewId = await saveReviewToFirestore(reviewDataToSave);
+    // <<<< 실제 저장 로직 끝 >>>>
+
+    // 저장 성공 후, 생성된 리뷰 ID를 가지고 상세 페이지로 이동
+    // 이 예시에서는 requestId를 리뷰의 ID처럼 사용하거나,
+    // 또는 별도의 reviewId를 생성했다고 가정하고 사용합니다.
+    // 지금은 requestId를 사용하여 해당 신청 건에 대한 리뷰를 본다고 가정하겠습니다.
+    // 만약 리뷰가 독립적인 ID를 갖는다면 그 ID를 사용해야 합니다.
+    // let's assume for now the review is uniquely identified by the requestId for display purposes,
+    // or that we've created a review and its ID is, for example, `newlyCreatedReviewId`.
+    const displayId = requestId; // 또는 새로 생성된 리뷰의 ID (newlyCreatedReviewId)
 
     alert("후기가 성공적으로 저장되었습니다! (실제 저장 로직은 구현 필요)");
-    router.push(`/requests/${requestId}`); // 또는 후기 목록 페이지 등으로 이동
+    router.push(`/reviews/detail/${displayId}`); // 저장된 리뷰를 보여줄 상세 페이지로 이동
   };
 
   return (

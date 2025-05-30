@@ -1,0 +1,155 @@
+/* components/CheckModal.module.css (또는 ./CheckModal.module.css) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* 반투명 검은색 배경 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* 다른 요소들 위에 표시 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.modal {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px; /* 이미지와 유사한 둥근 모서리 */
+  width: 90%;
+  max-width: 400px; /* 모달 최대 너비 */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee; /* 헤더 구분선 (선택 사항) */
+  padding-bottom: 12px;
+}
+
+.modalTitle {
+  font-size: 1.25rem; /* '본인인증' 글자 크기 */
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.8rem; /* 'X' 버튼 크기 */
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  line-height: 1;
+}
+.closeButton:hover {
+  color: #555;
+}
+
+.modalBody {
+  margin-bottom: 24px;
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.inputField:focus {
+  border-color: #2F80ED;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2);
+}
+
+.phoneInputWrapper {
+  display: flex;
+  gap: 8px; /* 입력 필드와 버튼 사이 간격 */
+}
+
+.phoneInputWrapper .inputField {
+  flex-grow: 1; /* 입력 필드가 남은 공간 차지 */
+}
+
+.sendCodeButton {
+  padding: 10px 15px;
+  background-color: #6c757d; /* 이미지의 회색 버튼과 유사하게 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
+  transition: background-color 0.2s;
+}
+.sendCodeButton:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+.sendCodeButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+
+.infoText {
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.5;
+  margin-top: 20px;
+  background-color: #f8f9fa; /* 안내 문구 배경 (선택 사항) */
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.errorMessage {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+.modalFooter {
+  /* 푸터 스타일 (현재는 버튼만 있음) */
+}
+
+.actionButton {
+  width: 100%;
+  padding: 12px;
+  background-color: #2F80ED; /* 이미지의 파란색 버튼 */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.actionButton:hover:not(:disabled) {
+  background-color: #1a6fcf;
+}
+.actionButton:disabled {
+  background-color: #73a9ef;
+  cursor: not-allowed;
+}

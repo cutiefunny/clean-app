@@ -1,0 +1,87 @@
+/* app/inquiry/new/InquiryFormPage.module.css */
+.pageContainer {
+  background-color: #f0f0f5;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.contentArea {
+  padding: 20px;
+  margin: 16px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.inputField,
+.selectField,
+.textareaField {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.inputField:focus,
+.selectField:focus,
+.textareaField:focus {
+  border-color: #2F80ED;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2);
+}
+
+.textareaField {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.fileInput {
+  font-size: 0.95rem;
+}
+
+.submitButton {
+  padding: 12px 20px;
+  background-color: #2F80ED;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+}
+
+.submitButton:hover {
+  background-color: #1a6fcf;
+}

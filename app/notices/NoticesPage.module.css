@@ -1,0 +1,66 @@
+/* app/notices/NoticesPage.module.css */
+.pageContainer {
+  background-color: #f0f0f5;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.contentArea {
+  padding: 20px;
+  margin: 16px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.noticeList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.noticeItem {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+.noticeItem:last-child {
+  border-bottom: none;
+}
+
+.noticeLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.noticeLink:hover .noticeTitle {
+  color: #2F80ED;
+}
+
+.noticeTitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 6px 0;
+}
+
+.noticeDate {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.noticeSummary {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}

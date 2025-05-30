@@ -38,3 +38,15 @@
     text-align: left;
     color: #AAAAAA;
 }
+
+.footerLink {
+  text-decoration: none;
+  color: inherit; /* 부모 요소의 색상 상속 */
+  display: inline-flex; /* 아이콘과 텍스트 정렬을 위해 */
+  align-items: center;
+  cursor: pointer;
+}
+
+.footerLink:hover {
+  text-decoration: underline; /* 마우스 오버 시 밑줄 (선택 사항) */
+}

@@ -121,11 +121,11 @@ export default function Home() {
         <ImageSlider images={eventImages} sliderHeight="150px" autoPlayDefault={true} />
       </div>
 
-      <div style={{ width: '100%', marginTop: '2rem', paddingBottom: '1rem' }}>
+      <div style={{ width: '100%', marginTop: '2rem', paddingBottom: '1rem' }} onClick={() => window.location.href = '/reviews'}>
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>리뷰</h2>
         </div>
-        <ReviewSlider reviews={sampleReviews} />
+        <ReviewSlider reviews={sampleReviews}/>
       </div>
 
       <div style={{ width: '100%', paddingBottom: '1rem' }}>

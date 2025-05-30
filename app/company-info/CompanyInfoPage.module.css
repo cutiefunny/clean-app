@@ -1,0 +1,37 @@
+/* app/company-info/CompanyInfoPage.module.css */
+.pageContainer {
+  background-color: #f0f0f5; /* 이미지와 유사한 페이지 배경색 */
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.contentArea {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 카드 사이의 간격 */
+}
+
+.infoCard {
+  background-color: #ffffff;
+  border-radius: 12px; /* 이미지와 유사한 둥근 모서리 */
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 은은한 그림자 */
+}
+
+.cardTitle {
+  font-size: 1.1rem; /* 섹션 제목 크기 */
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.cardContent {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #555;
+  margin: 0;
+  white-space: pre-line; /* \n 문자 줄바꿈 적용 */
+}

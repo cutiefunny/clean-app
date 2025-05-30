@@ -1,105 +1,89 @@
-/* /components/reviewCard.module.css */
-
-.detailButtonStyle {
-    position: relative;
-    font-family: 'Pretendard';
-    font-weight: 500;
-    font-size: 13px;
-    line-height: 100%;
-    letter-spacing: 0%;
-    color: #555555;
-}
-
+/* reviewCard.module.css */
 .reviewCard {
-    border-radius: 15px;
-    gap: 30px;
-    padding: 20px;
-    width:100%;
-    background: #FFFFFF;
-    flex-direction: column;
-    align-items: flex-start;
-    margin: 0 auto;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    gap: 5px;
-}
-
-.reviewButtonStyle {
-    position: relative;
-    font-family: 'Pretendard';
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 100%;
-    letter-spacing: 0%;
-    background-color: #2DA3E3;
-    color: #FFFFFF;
-    border-radius: 10px;
-    padding: 15px 20px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    gap : 10px;
-    width: 100%;
-    margin-top: 15px;
-}
-
-.reviewCheckButtonStyle {
-    position: relative;
-    font-family: 'Pretendard';
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 100%;
-    letter-spacing: 0%;
-    background-color: #FFFFFF;
-    color: #2DA3E3;
-    border-radius: 10px;
-    padding: 15px 20px;
-    border: 1px solid #2DA3E3;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    gap : 10px;
-    width: 100%;
-    margin-top: 15px;
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 16px;
 }
 
 .reviewTitle {
-    font-family: 'Pretendard';
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 100%;
-    letter-spacing: 0%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.detailLink { /* "자세히 보기" 링크 스타일 */
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #555;
+  cursor: pointer;
+  text-decoration: none; /* Link 컴포넌트 사용 시에는 불필요할 수 있음 */
+}
+
+.detailLink:hover {
+  text-decoration: underline;
+}
+
+.detailLink img {
+  margin-left: 4px;
+  width: 12px; /* CSS에서 크기 지정 권장 */
+  height: 12px;
 }
 
 .reviewTable {
-    margin-top:10px;
-    font-family: 'Pretendard';
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 100%;
-    letter-spacing: 0%;
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse; /* 테이블 선 중복 제거 */
+  margin-top: 12px;
 }
 
 .reviewTableRow {
-    display: flex;
-    height: 25px;
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
+  /* 각 행에 대한 스타일 */
 }
 
 .reviewTableHeader {
-    font-family: 'Pretendard';
-    font-weight: 400;
-    line-height: 100%;
-    letter-spacing: 0%;
-    color : #555555;
+  width: 30%;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #666;
+  vertical-align: top; /* 여러 줄일 경우 상단 정렬 */
 }
 
 .reviewTableData {
-    font-family: 'Pretendard';
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 100%;
-    letter-spacing: 0%;
+  width: 70%;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #333;
+  vertical-align: top;
+}
+
+/* 기존 버튼 스타일 활용 또는 새 스타일 정의 */
+.reviewButtonStyle, .reviewCheckButtonStyle {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reviewButtonStyle { /* 후기 작성 버튼 */
+  background-color: #007bff; /* 예시: 파란색 계열 */
+  color: white;
+}
+.reviewButtonStyle:hover {
+  background-color: #0056b3;
+}
+
+.reviewCheckButtonStyle { /* 후기 확인 버튼 */
+  background-color: #28a745; /* 예시: 초록색 계열 */
+  color: white;
+}
+.reviewCheckButtonStyle:hover {
+  background-color: #1e7e34;
 }

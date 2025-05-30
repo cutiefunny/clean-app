@@ -33,7 +33,7 @@ function ReviewCard({ review }) {
                 </tbody>
             </table>
             <button className={review.content ? styles.reviewCheckButtonStyle : styles.reviewButtonStyle}>
-                {review.content ? '후기 확인' : '후기 작성'}
+                review.content ? 후기 작성
             </button>
         </div>
     );

@@ -1,0 +1,115 @@
+/* components/ReviewDisplayCard.module.css */
+.reviewCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px; /* 카드 간 간격 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.headerLeft {
+  /* align-self: flex-start; */
+}
+
+.authorName {
+  font-size: 1.1rem; /* 이미지에서 '홍길동' 부분 */
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.serviceDetails {
+  font-size: 0.9rem;
+  color: #555; /* '9평' 부분 색상 */
+  margin: 0;
+}
+
+.serviceTypeClickable { /* '오피스텔' 부분 */
+  color: #2F80ED; /* 파란색 */
+  font-weight: 500; /* 약간 두껍게 */
+  /* cursor: pointer; */ /* 클릭 가능하게 하려면 */
+}
+/* .serviceTypeClickable:hover { text-decoration: underline; } */
+
+
+.headerRight {
+  text-align: right;
+  flex-shrink: 0; /* 내용이 길어져도 줄어들지 않도록 */
+  margin-left: 10px; /* 왼쪽 내용과의 최소 간격 */
+}
+
+.rating {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #FFB300; /* 별점 색상 (노란색 계열) */
+  margin-bottom: 4px;
+  display: block;
+}
+
+.usageDate {
+  font-size: 0.8rem;
+  color: #777;
+  white-space: nowrap;
+}
+
+.reviewText {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 16px;
+  white-space: pre-line;
+  /* 여러 줄 말줄임 (필요시) */
+  /* display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis; */
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1; /* 정사각형 비율 */
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f0f0f0; /* 이미지 로딩 전 배경색 */
+}
+
+.reviewImage {
+  /* layout="fill" 사용 */
+}
+
+.moreImagesOverlay {
+  position: absolute;
+  top: 50%; /* 중앙 정렬 */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* top: 8px; */ /* 우측 상단으로 하려면 이 스타일 사용 */
+  /* right: 8px; */
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  z-index: 1; /* 이미지 위에 오도록 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 두 번째 이미지 위에만 표시되도록 하려면 JS 로직에서 제어 */
+}
