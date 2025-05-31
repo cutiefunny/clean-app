@@ -268,3 +268,19 @@
     font-size: 0.95rem;
     color: #333;
 }
+
+.loadingContainer { /* 로딩 중일 때 전체 페이지 레이아웃을 비슷하게 유지 */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* pageContainer와 유사하게 */
+}
+
+.loadingText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  font-size: 1.2rem;
+  color: #555;
+  padding: 20px;
+}
