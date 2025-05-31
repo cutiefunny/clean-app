@@ -1,0 +1,61 @@
+/* components/ImageLightbox.module.css */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 10px; /* 화면 가장자리와의 최소 여백 */
+  box-sizing: border-box;
+}
+
+.contentDialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageOuterContainer {
+  position: relative;
+  display: block; /* 너비 설정을 위해 block 또는 flex 등으로 변경 */
+  width: 100vw;    /* 이미지가 차지할 가로 너비 (뷰포트 너비의 90%) */
+  max-width: 1200px; /* 절대적인 최대 너비 (예: 데스크탑 화면에서 너무 커지지 않도록) */
+  /* height는 내부 Image 컴포넌트가 'auto'로 설정되어 스스로 결정하므로 여기서는 불필요할 수 있습니다. */
+  /* 하지만 maxHeight를 제한하고 싶다면 여기에 설정할 수도 있습니다. */
+  /* max-height: 90vh; */ /* 이 maxHeight는 Image 컴포넌트의 style prop에서 제어 */
+  margin: auto; /* 수평 중앙 정렬 (부모가 flex가 아니거나, 추가적인 정렬을 위해) */
+  line-height: 0; /* 이미지 하단 여백 제거 */
+}
+
+/* Image 컴포넌트는 style prop을 통해 width: 100%, height: auto로 설정됩니다. */
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(30, 30, 30, 0.75);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 10; /* 이미지보다 위에 */
+  transition: background-color 0.2s;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}

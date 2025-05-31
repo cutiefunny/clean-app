@@ -5,17 +5,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'; // useR
 import Image from 'next/image';
 
 // 아이콘 정의 (동일하게 유지)
-const ChevronLeftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '24px', height: '24px'}}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{width: '24px', height: '24px'}}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-  </svg>
-);
 
 const PlayIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{width: '20px', height: '20px'}}>
@@ -157,10 +146,10 @@ const ImageSlider = ({ images = [], sliderHeight = "256px", autoPlayDefault = tr
               <Image
                 src={image.src}
                 alt={image.alt || `Slide ${index + 1}`}
-                layout="fill"
-                objectFit="cover"
+                fill
+                style={{ objectFit: 'cover', borderRadius: '0.5rem' }}
                 priority={index === 0}
-                style={{borderRadius: '0.5rem'}}
+                size ="100vw" // 이미지 크기를 뷰포트에 맞춤
                 // 이미지 드래그 방지 (선택 사항)
                 draggable="false" 
               />

@@ -1,0 +1,270 @@
+/* app/apply-cleaning/ApplyCleaning.module.css */
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0f0f5; /* 페이지 전체 배경색 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backButton {
+  font-size: 24px;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: -8px;
+}
+
+.pageTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  position: absolute; /* 중앙 정렬을 위해 */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stepIndicator {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.contentArea {
+  flex-grow: 1;
+  padding: 16px;
+  /* 각 스텝 컴포넌트가 흰색 배경을 가질 것이므로, 여기서는 패딩만 */
+}
+
+.stepContainer {
+  background-color: #ffffff;
+  padding: 24px 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.inputField,
+.selectField {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.inputField:focus,
+.selectField:focus {
+  border-color: #2F80ED;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2);
+}
+
+.radioGroup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* 화면 작을 때 줄바꿈 */
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.radioLabel:has(input:checked) {
+  border-color: #2F80ED;
+  background-color: #e9f2ff;
+}
+.radioLabel input[type="radio"] {
+  margin-right: 8px;
+}
+
+.nextButton {
+  width: 100%;
+  padding: 14px;
+  background-color: #2F80ED;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 24px; /* 폼 그룹과의 간격 */
+}
+.nextButton:hover {
+  background-color: #1a6fcf;
+}
+
+.placeholderText {
+    text-align: center;
+    color: #777;
+    padding: 20px;
+}
+
+.stepTitle { /* 각 스텝의 소제목 */
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.radioGroupVertical { /* 세로 정렬 라디오 그룹 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radioLabelFullWidth { /* 전체 너비 차지하는 라디오 라벨 */
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.radioLabelFullWidth:has(input:checked) {
+  border-color: #2F80ED;
+  background-color: #e9f2ff;
+}
+.radioLabelFullWidth input[type="radio"] {
+  margin-right: 10px;
+}
+
+.quantityInputGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0; /* 각 항목 구분선 */
+}
+.quantityInputGroup:last-of-type { /* 마지막 항목은 구분선 제거 */
+    /* border-bottom: none; */ /* 추가요청사항 위에 구분선이 필요할 수 있음 */
+}
+
+
+.quantityLabel {
+  font-size: 1rem;
+  color: #333;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantityButton {
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%; /* 원형 버튼 */
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1; /* 버튼 내 텍스트 수직 정렬 */
+  transition: background-color 0.2s;
+}
+.quantityButton:hover:not(:disabled) {
+  background-color: #dee2e6;
+}
+.quantityButton:disabled {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+
+.quantityValue {
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-width: 20px; /* 숫자 표시 공간 확보 */
+  text-align: center;
+}
+
+.textareaField { /* 이미 정의되어 있다면 수정 또는 그대로 사용 */
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.summarySection {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background-color: #f8f9fa;
+}
+
+.summaryItem {
+  font-size: 0.95rem;
+  color: #333;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e0e0e0; /* 점선 구분 */
+  display: flex; /* 레이블과 값 정렬 */
+}
+.summaryItem:last-child {
+  border-bottom: none;
+}
+
+.summaryLabel {
+  font-weight: 500;
+  color: #555;
+  width: 100px; /* 레이블 너비 고정 */
+  flex-shrink: 0; /* 너비 유지 */
+}
+
+.preText { /* 추가 요청사항의 줄바꿈 유지를 위해 */
+    white-space: pre-wrap;
+    font-family: inherit;
+    margin: 0;
+    font-size: 0.95rem;
+    color: #333;
+}

@@ -82,34 +82,30 @@
 }
 
 .imageWrapper {
-  position: relative;
+  position: relative; /* 자식 요소의 absolute 포지셔닝 기준점 */
   width: 100%;
-  aspect-ratio: 1 / 1; /* 정사각형 비율 */
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
-  overflow: hidden;
-  background-color: #f0f0f0; /* 이미지 로딩 전 배경색 */
+  overflow: hidden; /* 둥근 모서리 밖으로 내용이 나가지 않도록 */
+  background-color: #f0f0f0;
 }
 
 .reviewImage {
-  /* layout="fill" 사용 */
+  /* layout="fill" 또는 fill prop 사용 시 object-fit 등은 Image 컴포넌트의 style prop으로 전달 */
 }
 
 .moreImagesOverlay {
-  position: absolute;
-  top: 50%; /* 중앙 정렬 */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  /* top: 8px; */ /* 우측 상단으로 하려면 이 스타일 사용 */
-  /* right: 8px; */
-  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute; /* 부모(.imageWrapper) 기준으로 위치 설정 */
+  top: 8px;           /* 상단에서 8px 아래 */
+  right: 8px;          /* 우측에서 8px 왼쪽 */
+  background-color: rgba(0, 0, 0, 0.65); /* 반투명 검은색 배경 */
   color: white;
-  padding: 6px 10px;
-  border-radius: 12px;
-  font-size: 0.9rem;
+  padding: 3px 7px;    /* 내부 여백 (텍스트와 배경 사이) */
+  border-radius: 10px; /* 둥근 모서리 */
+  font-size: 0.75rem;  /* 글자 크기 */
   font-weight: bold;
-  z-index: 1; /* 이미지 위에 오도록 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 두 번째 이미지 위에만 표시되도록 하려면 JS 로직에서 제어 */
+  z-index: 1;          /* 이미지가 있을 경우 이미지 위에 표시되도록 */
+  line-height: 1;      /* 텍스트 수직 정렬을 위해 */
+  pointer-events: none; /* 중요: 오버레이가 이미지 클릭을 가로채지 않도록 */
+                        /* 만약 오버레이 자체도 클릭 가능하게 하려면 이 속성 제거하고 JS에서 이벤트 처리 */
 }

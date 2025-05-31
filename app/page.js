@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import styles from './page.module.css'; // CSS 모듈을 사용하여 스타일링
 import Accordion from '@/components/Accordion';
 import FireStarter from '@/components/fireStarter';
+import { useRouter } from 'next/navigation';
 import { db, auth } from '../lib/firebase/clientApp';
 import {
   collection, getDocs, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot,
@@ -18,6 +19,12 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 export default function Home() {
+
+  const router = useRouter();
+
+  const handleCardClick = (serviceTitle) => {
+    router.push(`/apply-cleaning?serviceType=${encodeURIComponent(serviceTitle)}`);
+  };
 
   //#region 추후 백엔드에서 가져 올 부분
   const sliderImages = [
@@ -110,6 +117,7 @@ export default function Home() {
             imageUrl={card.imageUrl}
             imageAlt={card.imageAlt}
             backgroundColor={card.backgroundColor}
+            onClick={() => handleCardClick(card.title)}
           />
         ))}
       </div>

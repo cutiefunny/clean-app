@@ -10,6 +10,7 @@ const CustomizableCard = ({
     titleStyle = { fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '4px' },
     descriptionStyle = { fontSize: '12px', color: 'white', marginBottom: '16px' },
     imageContainerStyle = { width: '50px', height: '50px' },
+    onClick = () => {},
 }) => {
     const cardStyle = {
         position: 'relative',
@@ -21,7 +22,7 @@ const CustomizableCard = ({
     };
 
     return (
-        <div style={cardStyle}>
+        <div style={cardStyle} onClick={onClick}>
             {/* 텍스트 컨텐츠 */}
             <div style={{ position: 'relative', zIndex: 10 }}>
                 <h3 style={titleStyle}>
