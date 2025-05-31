@@ -42,8 +42,8 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
 
   // 청소 서비스 종류 (실제로는 DB나 설정 파일에서 가져올 수 있음)
   const serviceOptions = [
-    "입주청소",
-    "이사청소",
+    "신축 입주 청소",
+    "이사 청소",
     "준공 리모델링 청소",
     "상가&사무실 청소",
     "기타 청소"
@@ -85,7 +85,7 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
       <div className={styles.formGroup}>
         <label className={styles.label}>희망시간 선택</label>
         <div className={styles.radioGroup}>
-          {['오전', '오후', '시간 무관'].map(time => (
+          {['오전', '오후', '상담 후 협의'].map(time => (
             <label key={time} className={styles.radioLabel}>
               <input
                 type="radio"

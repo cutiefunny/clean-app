@@ -23,7 +23,7 @@ export default function Step5Confirm({ formData, onSubmit }) {
   };
 
   return (
-    <div className={styles.stepContainer}>
+    <div style ={{ backgroundColor: '#fff' }}>
       <h2 className={styles.stepTitle}>청소 관련 정보 확인</h2>
       <div className={styles.summarySection}>
         <div className={styles.summaryItem}><span className={styles.summaryLabel}>희망 서비스:</span> {formData.serviceType}</div>

@@ -33,7 +33,7 @@ export default function Step4Space({ formData, updateFormData, onNext }) {
   };
 
   return (
-    <div className={styles.stepContainer}>
+    <div style ={{ backgroundColor: '#fff' }}>
       <h2 className={styles.stepTitle}>공간 정보</h2>
       <div className={styles.formGroup}>
         <QuantityInput

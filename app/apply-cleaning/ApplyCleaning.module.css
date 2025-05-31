@@ -47,14 +47,18 @@
 }
 
 .contentArea {
-  flex-grow: 1;
-  padding: 16px;
-  /* 각 스텝 컴포넌트가 흰색 배경을 가질 것이므로, 여기서는 패딩만 */
+  flex-grow: 1; /* Header2와 stepProgressContainer를 제외한 나머지 모든 세로 공간을 차지 */
+  display: flex;  /* 자식 요소(활성화된 Step 컴포넌트)가 높이를 100% 사용할 수 있도록 */
+  flex-direction: column; /* 자식 요소를 수직으로 쌓음 (실제로는 하나의 Step만 렌더링) */
+  overflow: hidden; /* 이중 스크롤바 방지 (Step 컴포넌트가 자체 스크롤 처리) */
+  padding: 0 16px 16px 16px; /* 페이지 좌우, 하단 여백. 상단 여백은 stepProgressContainer에 있을 수 있음 */
+                             /* 또는 padding: 0; 으로 하고 각 Step 컴포넌트에서 전체적인 margin/padding 관리 */
+  height: 100%; /* 부모 요소의 높이를 100%로 설정하여 자식 요소가 전체 공간을 차지하도록 */
 }
 
 .stepContainer {
   background-color: #ffffff;
-  padding: 24px 20px;
+  /* padding: 24px 20px; */
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -113,20 +117,23 @@
 }
 
 .nextButton {
-  width: 100%;
-  padding: 14px;
-  background-color: #2F80ED;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 24px; /* 폼 그룹과의 간격 */
+    width: 100%;
+    padding: 12px;
+    background-color: #2DA3E3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: sticky;
+    bottom: 20px; /* Adjust the value as needed */
+    margin-top: 20px; /* Optional: Add some space between the content and the button */
 }
+
 .nextButton:hover {
-  background-color: #1a6fcf;
+  background-color: #2DA3E3;
 }
 
 .placeholderText {
@@ -160,7 +167,7 @@
   transition: border-color 0.2s, background-color 0.2s;
 }
 .radioLabelFullWidth:has(input:checked) {
-  border-color: #2F80ED;
+  border-color: #2DA3E3;
   background-color: #e9f2ff;
 }
 .radioLabelFullWidth input[type="radio"] {
@@ -284,3 +291,91 @@
   color: #555;
   padding: 20px;
 }
+
+.locationSelectContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 40px; /* "다음" 버튼과의 간격 조정 */
+  width: 100%; /* 컨테이너가 부모 너비를 차지하도록 */
+}
+
+.locationSelectButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border: 1px solid #2F80ED;
+  border-radius: 8px;
+  background-color: white;
+  color: #2F80ED;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  width: 90%; /* 버튼 너비 조정 */
+  max-width: 400px; /* 최대 너비 제한 */
+  box-sizing: border-box; /* padding, border 포함하여 width 계산 */
+}
+
+.locationSelectButton:hover {
+  background-color: #e9f2ff;
+}
+
+.locationIcon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.stepProgressContainer {
+  width: 100%;
+  padding: 12px 20px; /* 위아래 패딩을 좀 더 주어 알약 모양이 잘 보이도록 */
+  background-color: #ffffff; /* 또는 페이지 배경색 (#f0f0f5)과 동일하게 할 수도 있음 */
+  /* border-bottom: 1px solid #f0f0f0; */ /* 구분선은 필요에 따라 */
+  box-sizing: border-box;
+  text-align: left; /* 내부 요소 왼쪽 정렬 */
+}
+
+.stepProgressText { /* 이 클래스가 알약 모양의 스타일을 가집니다. */
+  display: inline-block; /* 배경색과 패딩이 적용되도록 inline-block으로 변경 */
+  padding: 6px 16px;     /* 알약 내부의 텍스트 여백 */
+  
+  /* 배경색: #2DA3E3의 10% 투명도 */
+  /* HEXA (RGBA): #2DA3E3에 10% alpha는 1A (16진수 26에 해당, 255 * 0.1 = 25.5) */
+  /* 하지만 CSS에서 HEXA는 #RRGGBBAA 순서이므로, #2DA3E31A 가 맞습니다. */
+  background-color: #2DA3E31A; /* #2DA3E3 색상에 alpha 10% */
+  /* 또는 rgba(45, 163, 227, 0.1) 와 같이 사용 가능 */
+
+  color: #2DA3E3;          /* 텍스트 색상 */
+  
+  border-radius: 50px;     /* 충분히 큰 값을 주어 알약 모양 생성 */
+  font-size: 0.85rem;      /* 폰트 크기 (조절 가능) */
+  font-weight: 600;        /* 폰트 굵기 (조절 가능) */
+  line-height: 1.2;        /* 줄 높이 (패딩과 함께 알약 세로 크기 조절) */
+  text-align: center;      /* 알약 내부 텍스트 중앙 정렬 (필수는 아님) */
+}
+
+.contentArea {
+  flex-grow: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.stepContainer {
+  background-color: #ffffff;
+  padding: 24px 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+
+.stepTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  /* text-align: center; */ /* 각 스텝의 제목 정렬 */
+}
+
+

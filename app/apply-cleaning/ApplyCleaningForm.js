@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './ApplyCleaning.module.css'; // 메인 CSS 모듈 공유
+import Header2 from '@/components/Header2'; // 헤더 컴포넌트
 
 // 각 단계별 컴포넌트 import
 import Step1Service from './Step1Service';
@@ -86,11 +87,18 @@ export default function ApplyCleaningForm() {
 
   return (
     <>
-      <header className={styles.header}>
-        <button onClick={handleHeaderBack} className={styles.backButton}>‹</button>
-        <h1 className={styles.pageTitle}>청소신청</h1>
-        <span className={styles.stepIndicator}>{currentStep}/{TOTAL_STEPS}</span>
-      </header>
+      <Header2
+        title="청소신청"
+        onBack={handleHeaderBack}
+        // style prop은 Header2 내부 디자인에 따라 조절 필요
+        // 예: style={{ display: 'flex', justifyContent: 'center' }}
+      />
+
+      <div className={styles.stepProgressContainer}>
+        <span className={styles.stepProgressText}>
+          {currentStep} / {TOTAL_STEPS}
+        </span>
+      </div>
       <main className={styles.contentArea}>
         {renderStepContent()}
       </main>

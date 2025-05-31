@@ -137,7 +137,7 @@
 .actionButton {
   width: 100%;
   padding: 12px;
-  background-color: #2F80ED; /* 이미지의 파란색 버튼 */
+  background-color: #2DA3E3; /* 이미지의 파란색 버튼 */
   color: white;
   border: none;
   border-radius: 8px;
@@ -147,9 +147,9 @@
   transition: background-color 0.2s;
 }
 .actionButton:hover:not(:disabled) {
-  background-color: #1a6fcf;
+  background-color: #2DA3E3;
 }
 .actionButton:disabled {
-  background-color: #73a9ef;
+  background-color: #2DA3E3;
   cursor: not-allowed;
 }

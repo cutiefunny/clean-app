@@ -24,7 +24,7 @@ export default function Step3Building({ formData, updateFormData, onNext }) {
   };
 
   return (
-    <div className={styles.stepContainer}>
+    <div style ={{ backgroundColor: '#fff' }}>
       <h2 className={styles.stepTitle}>건물 정보 입력 (선택 가능)</h2>
       <div className={styles.radioGroupVertical}>
         {buildingInfoOptions.map(option => (
