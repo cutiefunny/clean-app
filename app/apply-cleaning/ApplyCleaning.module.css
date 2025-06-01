@@ -698,3 +698,151 @@
     transform: translate(-50%, -50%) rotate(45deg);
 }
 /* step3 스타일 정의 끝 #endregion */
+
+/* #region step5 스타일 정의 */
+.charCount {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.sectionDivider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 24px 0;
+}
+
+.subSectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+/* .phoneInputWrapper, .sendCodeButton 는 CheckModal.module.css 에서 가져오거나 유사하게 정의 */
+.phoneInputWrapper { /* CheckModal의 스타일 재활용 또는 여기에 정의 */
+  display: flex;
+  gap: 8px;
+}
+.phoneInputWrapper .inputField {
+  flex-grow: 1;
+}
+.sendCodeButton { /* CheckModal의 스타일 재활용 또는 여기에 정의 */
+  padding: 0 15px; /* 높이는 inputField와 동일하게 설정됨 */
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 46px; /* inputField height - 2*border */
+  height: 48px;
+}
+.sendCodeButton:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+.sendCodeButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+
+.otpInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.otpInputWrapper .inputField {
+  flex-grow: 1;
+}
+
+.timerText {
+  font-size: 0.9rem;
+  color: #dc3545; /* 빨간색 타이머 */
+  font-weight: 500;
+  min-width: 40px; /* 타이머 공간 확보 */
+  text-align: center;
+}
+
+.verifyOtpButton {
+  padding: 0 15px; /* 높이는 inputField와 동일하게 */
+  background-color: #6c757d; /* 전송 버튼과 유사한 스타일 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 46px;
+  height: 48px;
+}
+.verifyOtpButton:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+.verifyOtpButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.infoTextSmall { /* CheckModal의 .infoText 와 유사 */
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 12px;
+  /* background-color: #f8f9fa; */
+  /* padding: 8px; */
+  /* border-radius: 4px; */
+}
+
+.errorMessage { /* CheckModal의 .errorMessage 와 유사 */
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    /* text-align: center; */
+}
+.successMessage {
+    color: green;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 10px;
+    /* text-align: center; */
+}
+
+/* Textarea와 글자 카운트를 감싸는 wrapper */
+.textareaWrapper {
+  position: relative; /* 자식 요소(.charCount)의 absolute 포지셔닝 기준점 */
+  width: 100%;
+}
+
+.textareaField {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+  min-height: 120px; /* 기존 rows="6"과 유사한 높이 또는 필요에 따라 조절 */
+  
+  /* 중요: 글자 수 카운트가 텍스트를 가리지 않도록 하단 패딩 추가 */
+  /* .charCount의 높이 + 약간의 여유 공간만큼 패딩을 줍니다. */
+  padding-bottom: 30px; /* 예시 값, .charCount의 실제 높이에 맞춰 조절 */
+}
+
+.charCount {
+  position: absolute; /* .textareaWrapper 내부에서 절대 위치 */
+  bottom: 8px;        /* .textareaWrapper 하단에서 8px 위 (textarea 패딩 내부) */
+  right: 12px;       /* .textareaWrapper 우측에서 12px 왼쪽 (textarea 패딩 내부) */
+  font-size: 0.75rem; /* 글자 크기 */
+  color: #888;       /* 글자 색상 */
+  background-color: transparent; /* 기본적으로 textarea 배경색을 따름 */
+  padding: 5px 5px;
+  border-radius: 3px;
+  pointer-events: none; /* 글자 수 카운트가 textarea 타이핑/클릭을 방해하지 않도록 */
+  line-height: 1; /* 글자 수 표시가 한 줄로 깔끔하게 나오도록 */
+}
+/* step5 스타일 정의 끝 #endregion */

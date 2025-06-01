@@ -5,8 +5,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import Header from '@/components/Header'; // Header 임포트
 import Header2 from '@/components/Header2';
 import styles from './ReviewDetailPage.module.css';
+
+const DESKTOP_BREAKPOINT = 500; // 데스크톱으로 간주할 너비 (예: 1024px)
 
 // 위에서 정의한 mockSubmittedReviews 또는 실제 데이터 fetching 함수
 const mockSubmittedReviews = {
@@ -31,6 +34,22 @@ export default function ReviewDetailPage() {
 
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
+    };
+
+    checkScreenSize(); // 초기 실행
+    window.addEventListener('resize', checkScreenSize); // 리사이즈 이벤트 리스너 등록
+
+    return () => {
+      window.removeEventListener('resize', checkScreenSize); // 클린업 함수
+    };
+  }, []);
+
+  const CurrentHeader = isDesktop ? Header : Header2;
 
   useEffect(() => {
     if (reviewId) {
@@ -66,7 +85,7 @@ export default function ReviewDetailPage() {
   if (loading) {
     return (
       <div className={styles.pageContainer}>
-        <Header2 title="로딩 중..." onBack={() => router.back()} />
+        <CurrentHeader title="로딩 중..." onBack={() => router.back()} />
         <main className={styles.loadingText}>후기 정보를 불러오는 중입니다...</main>
       </div>
     );
@@ -75,7 +94,7 @@ export default function ReviewDetailPage() {
   if (!review) {
     return (
       <div className={styles.pageContainer}>
-        <Header2 title="오류" onBack={() => router.back()} />
+        <CurrentHeader title="오류" onBack={() => router.back()} />
         <main className={styles.errorText}>
           후기 정보를 찾을 수 없습니다. (ID: {reviewId || "알 수 없음"})<br />
           <Link href="/requests">신청 목록으로 돌아가기</Link>
@@ -91,7 +110,7 @@ export default function ReviewDetailPage() {
   return (
     <div className={styles.pageContainer}>
       {/* 헤더 제목은 "후기 상세" 또는 "작성된 후기" 등으로 변경하는 것이 좋습니다. */}
-      <Header2 title="후기 상세" onBack={() => router.back()} />
+      <CurrentHeader title="후기 상세" onBack={() => router.back()} />
 
       <main className={styles.contentArea}>
         <div className={styles.reviewCard}>

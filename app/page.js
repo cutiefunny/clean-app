@@ -102,7 +102,7 @@ export default function Home() {
   //#endregion
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fff', padding: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fff', padding: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '600px', margin: '0 auto' }}>
       <Header />
       <div style={{ width: '100%', margin: '0.5rem 0' }}>
         <ImageSlider images={sliderImages} sliderHeight="150px" autoPlayDefault={true} />

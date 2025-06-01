@@ -34,6 +34,11 @@ export default function ApplyCleaningForm() {
     spaceStructureType: '', // 새로 추가
     userName: '',
     userPhoneNumber: '',
+    // Step5 필드들
+    additionalRequest: '', // Step5 문의사항에 해당
+    userName: '',          // Step5 본인인증 이름
+    userPhoneNumber: '',   // Step5 본인인증 휴대폰번호
+    otpVerified: false,    // Step5 본인인증 완료 여부
   });
 
    const didInitializeFromUrl = useRef(false);
@@ -67,7 +72,10 @@ export default function ApplyCleaningForm() {
                formData.verandaCount >= 0 &&
                !!formData.spaceStructureType;
       case 5:
-        return !!formData.userName && !!formData.userPhoneNumber && /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, ''));
+        return !!formData.userName &&
+               !!formData.userPhoneNumber &&
+               /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, '')) &&
+               !!formData.otpVerified; // otpVerified가 true여야 함
       default:
         return false;
     }

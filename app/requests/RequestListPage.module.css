@@ -1,28 +1,41 @@
 /* app/requests/RequestListPage.module.css */
-.listContainer {
-  width: 100%;
-  max-width: 600px; /* 목록 최대 너비 */
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f0f0f5; /* 페이지 배경색 */
-  min-height: calc(100vh - 60px); /* 헤더 높이 제외 */
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* 카드 사이의 간격 */
+.pageWrapper {
+  background-color: #f0f0f5;
+  min-height: 100vh;
+  max-width: 600px; /* PC에서 더 넓은 최대 너비 허용 */
+  margin: 0 auto; /* 중앙 정렬 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.requestCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #ffffff;
+.listContainer {
+  width: 100%;
+  max-width: 1200px; /* PC에서 더 넓은 최대 너비 허용 (카드 2개 배치 고려) */
+  margin: 0 auto;
   padding: 16px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease-in-out;
+  display: grid;
+  gap: 16px; /* 카드 간의 간격 */
+  
+  /* 모바일 기본: 1열 */
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 500px) { /* DESKTOP_BREAKPOINT 값과 일치시키거나 더 큰 값 사용 */
+  .listContainer {
+    grid-template-columns: repeat(2, 1fr); /* 한 줄에 2개의 카드를 균등하게 배치 */
+    /* 더 넓은 화면에서는 3열 등으로 변경 가능:
+       예: grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+       이렇게 하면 각 카드의 최소 너비를 300px로 하고, 공간이 되면 자동으로 여러 열로 채워집니다.
+    */
+  }
+}
+
+.desktopTitle {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #444;
+  margin : 20px 20px 5px 20px;
 }
 
 .requestCard:hover {

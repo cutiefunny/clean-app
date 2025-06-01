@@ -26,7 +26,7 @@ const Header = () => {
 
   return (
     <> {/* 여러 요소를 반환하므로 Fragment 또는 div로 감싸기 */}
-      <header style={{ width: '100%', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 50 }}> {/* 헤더 고정 예시 */}
+      <header style={{ width: '100%', maxWidth: '600px', margin: '0 auto', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 50 }}> {/* 헤더 고정 예시 */}
         <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: '24px', paddingRight: '24px' }}>
           <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {/* Left Section (로고) - 클릭 시 새로고침 대신 홈으로 이동 권장 */}

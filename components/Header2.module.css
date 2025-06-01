@@ -1,0 +1,47 @@
+/* components/Header2.module.css */
+.mobileHeaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 기본적으로 양쪽 정렬 */
+  padding: 0 16px; /* 좌우 패딩 */
+  height: 56px; /* 모바일 헤더 높이 예시 */
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky; /* 상단 고정 */
+  top: 0;
+  z-index: 100; /* 다른 컨텐츠 위에 오도록 */
+}
+
+.backButton {
+  background: none;
+  border: none;
+  font-size: 28px; /* 뒤로가기 아이콘 크기 */
+  color: #333;
+  cursor: pointer;
+  padding: 8px; /* 클릭 영역 확보 */
+  margin-left: -8px; /* 시각적 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 1.1rem; /* 제목 폰트 크기 */
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  /* 제목 중앙 정렬을 위한 일반적인 방법 */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 100px); /* 뒤로가기/우측 버튼 공간 고려 */
+}
+
+.placeholderEnd { /* 뒤로가기 버튼만 있을 때 제목 중앙 정렬을 위한 빈 공간 */
+  width: 30px; /* 뒤로가기 버튼과 유사한 너비 */
+}

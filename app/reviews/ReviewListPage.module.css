@@ -1,37 +1,39 @@
 /* app/reviews/ReviewListPage.module.css */
 .pageContainer {
-  background-color: #f0f0f5;
-  min-height: 100vh;
+    background-color: #f0f0f5;
+    min-height: 100vh;
+    max-width: 600px;
+    margin: 0 auto; /* 컨테이너를 중앙 정렬합니다. */
 }
 
 .actionBar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 10px 16px;
-  background-color: #f0f0f5; /* 페이지 배경과 동일하게 또는 다르게 */
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 16px;
+    background-color: #f0f0f5; /* 페이지 배경과 동일하게 또는 다르게 */
 }
 
 .sortButton {
-  background: none;
-  border: none;
-  color: #555;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px;
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px;
 }
 .sortButton:hover {
-  color: #000;
+    color: #000;
 }
 
 .listContentArea {
-  padding: 0 16px 16px 16px; /* 위쪽 패딩은 actionBar가 처리 */
+    padding: 0 16px 16px 16px; /* 위쪽 패딩은 actionBar가 처리 */
 }
 
 .loadingText,
 .noReviewsText {
-  text-align: center;
-  padding: 40px 20px;
-  color: #777;
-  font-size: 1rem;
+    text-align: center;
+    padding: 40px 20px;
+    color: #777;
+    font-size: 1rem;
 }

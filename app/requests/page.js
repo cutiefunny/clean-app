@@ -1,25 +1,27 @@
 // app/requests/page.js
 'use client';
 
-import Header2 from '@/components/Header2'; // 기존 헤더 컴포넌트
-import RequestCard from '@/components/RequestCard'; // 새로 만든 RequestCard 컴포넌트 import
-import listStyles from './RequestListPage.module.css'; // 목록 페이지용 CSS 모듈
+import React, { useState, useEffect } from 'react'; // useState, useEffect 추가
+import { useRouter } from 'next/navigation'; // useRouter 추가
+import Header2 from '@/components/Header2';
+import RequestCard from '@/components/RequestCard';
+import listStyles from './RequestListPage.module.css';
 
-// 상세 카드에 필요한 모든 필드를 포함하는 목업 데이터
+// 목업 데이터 (기존과 동일)
 const mockRequests = [
   {
     id: 'req1',
     serviceType: '입주청소',
     usageDate: '2024.04.15',
-    preferredTime: '오후', // 상세 페이지에는 있지만 카드에는 표시 안 함 (필요시 추가)
-    address: '서울시 강남구 강남대로 123길 12', // 상세 페이지용
+    preferredTime: '오후',
+    address: '서울시 강남구 강남대로 123길 12',
     buildingType: '오피스텔',
     area: '18평',
     spaceInfo: '방1, 화장실1',
-    name: '홍길동', // 상세 페이지용
-    phoneNumber: '010-1234-5678', // 상세 페이지용
-    inquiry: '지금 방에 모든짐은 그대로 입니다.\n그리고 깨끗하게 부탁드릴게요.', // 상세 페이지용
-    reviewwritten: false // 후기 작성 여부 (카드에서 사용)
+    name: '홍길동',
+    phoneNumber: '010-1234-5678',
+    inquiry: '지금 방에 모든짐은 그대로 입니다.\n그리고 깨끗하게 부탁드릴게요.',
+    reviewwritten: false
   },
   {
     id: 'req2',
@@ -51,19 +53,42 @@ const mockRequests = [
   }
 ];
 
+const DESKTOP_BREAKPOINT = 550; // 데스크톱으로 간주할 너비 (예: 550px)
 
 const RequestListPage = () => {
+  const router = useRouter(); // useRouter 훅 사용
+  const [isDesktop, setIsDesktop] = useState(false); // 데스크톱 여부 상태
+
+  // 화면 크기 감지 로직
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= DESKTOP_BREAKPOINT);
+    };
+
+    checkScreenSize(); // 초기 실행
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize); // 클린업
+  }, []);
+
+  const handleBack = () => {
+    router.back(); // 뒤로가기 기능
+  };
+
+  // 현재 화면 크기에 따라 적절한 헤더 컴포넌트 선택
+  const headerTitle = "신청내역"; // 헤더 제목 (기존 "리뷰내역"에서 변경 권장)
+
   return (
-    <>
-      {/* Header2의 title prop은 "리뷰내역"에서 "신청내역" 등으로 변경하시는 것이 의미상 맞을 수 있습니다. */}
-      <Header2 title="리뷰내역" onBack={() => window.history.back()} />
+    // 페이지 전체를 감싸는 div에 배경색 등을 적용하려면 여기에 스타일 적용
+    <div className={listStyles.pageWrapper}> {/* 예: 전체 페이지 배경을 위한 wrapper */}
+      <Header2 title={headerTitle} onBack={handleBack} />
+      {isDesktop && <div className={listStyles.desktopTitle}>내 신청내역</div>}
       <div className={listStyles.listContainer}>
         {mockRequests.map((request) => (
-          // 새로운 RequestCard 컴포넌트 사용
           <RequestCard key={request.id} request={request} />
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
