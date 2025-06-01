@@ -26,10 +26,12 @@ export default function ApplyCleaningForm() {
     addressFull: '',
     addressDetail: '',
     buildingInfoType: '',
-    roomCount: 1,
-    bathroomCount: 1,
+    // Step4 필드들
+    supplyArea: '',         // 새로 추가
+    roomCount: 0,           // 기본값 0으로 변경 (이미지 UI 기준)
+    bathroomCount: 0,       // 기본값 0으로 변경
     verandaCount: 0,
-    additionalRequest: '',
+    spaceStructureType: '', // 새로 추가
     userName: '',
     userPhoneNumber: '',
   });
@@ -59,7 +61,11 @@ export default function ApplyCleaningForm() {
       case 3:
         return !!formData.buildingType && Object.keys(formData.siteConditions || {}).length > 0; // siteConditions가 객체로 전달됨
       case 4:
-        return formData.roomCount >= 1 && formData.bathroomCount >= 1;
+        return !!formData.supplyArea &&
+               formData.roomCount >= 0 &&
+               formData.bathroomCount >= 0 &&
+               formData.verandaCount >= 0 &&
+               !!formData.spaceStructureType;
       case 5:
         return !!formData.userName && !!formData.userPhoneNumber && /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, ''));
       default:

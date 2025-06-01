@@ -1,13 +1,14 @@
 // app/apply-cleaning/Step1Service.js
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './ApplyCleaning.module.css';
 
 export default function Step1Service({ formData, updateFormData, onNext }) {
   const [serviceType, setServiceType] = useState('');
   const [desiredDate, setDesiredDate] = useState('');
   const [desiredTime, setDesiredTime] = useState('');
+  const dateInputRef = useRef(null); // 날짜 입력 필드에 대한 ref 생성
 
   // useEffect는 formData prop (특히 serviceType)이 외부에서 변경될 때만 로컬 상태를 동기화합니다.
   useEffect(() => {
@@ -50,6 +51,20 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
     // updateFormData({ desiredTime: timeValue }); // 즉시 반영을 원하면 여기서도 호출
   };
 
+  // 커스텀 달력 아이콘 클릭 시 네이티브 날짜 선택기 표시
+//   const handleCalendarIconClick = () => {
+//     if (dateInputRef.current) {
+//       try {
+//         dateInputRef.current.showPicker();
+//       } catch (error) {
+//         // showPicker()가 지원되지 않는 일부 브라우저(예: 구형 Firefox)에서는
+//         // input에 focus()를 시도해볼 수 있으나, 항상 동작하지는 않습니다.
+//         console.warn("dateInputRef.current.showPicker() is not supported in this browser. Trying focus().", error);
+//         dateInputRef.current.focus();
+//       }
+//     }
+//   };
+
   const handleNext = () => {
     if (!serviceType || !desiredDate || !desiredTime) {
       alert("모든 필수 항목을 선택해주세요.");
@@ -81,17 +96,27 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
         </select>
       </div>
 
-      <div className={styles.formGroup}>
+       <div className={styles.formGroup}>
         <label htmlFor="desiredDate" className={styles.label}>희망일 선택</label>
         <div className={styles.dateInputContainer}>
           <input
             type="date"
             id="desiredDate"
-            className={`${styles.inputField} ${styles.step1Date}`}
-            value={desiredDate} // 로컬 state 사용
+            className={`${styles.inputField} ${styles.step1Date}`} // 이 클래스에 기본 아이콘 숨김 스타일 적용
+            value={desiredDate}
             onChange={handleDateChange}
             required
+            ref={dateInputRef} // ref 연결
           />
+          {/* 커스텀 아이콘에 onClick 핸들러 추가 */}
+          {/* <span
+            className={styles.calendarIcon}
+            onClick={handleCalendarIconClick}
+            role="button" // 접근성을 위해 역할 명시
+            aria-label="날짜 선택 달력 열기"
+            tabIndex={0} // 키보드 포커스 가능하도록 (선택 사항)
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCalendarIconClick(); }} // 키보드 접근성 (선택 사항)
+          ></span> */}
         </div>
       </div>
 

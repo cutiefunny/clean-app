@@ -114,6 +114,65 @@
   padding-right: 40px; /* 커스텀 화살표와 텍스트 간의 충분한 여백 확보 */
 }
 
+/* 날짜 입력 필드를 감싸는 컨테이너 */
+.dateInputContainer {
+  position: relative; /* 내부 아이콘의 absolute 포지셔닝 기준점 */
+  width: 100%;
+}
+
+.step1Date {
+    /* 기존의 .inputField 로부터 상속받는 스타일들 (height, padding-left 등) */
+    /* 예: composes: inputField; (CSS Modules 기능) 또는 클래스 다중 적용 */
+    
+    padding-right: 40px; /* 커스텀 아이콘을 위한 공간 확보 */
+
+    /* 브라우저 기본 appearance 최대한 제거 시도 */
+    -webkit-appearance: none; /* Chrome, Safari, Edge, Opera */
+    -moz-appearance: textfield; /* Firefox에서 아이콘을 포함한 기본 UI를 텍스트 필드처럼 변경 */
+    appearance: none; /* 표준 속성 */
+
+    background-color: #fff;
+}
+
+/* 화살표 숨기기 (IE, Edge) */
+.step1Date::-ms-clear {
+    display: none; /* input[type=date]의 X 버튼 제거 */
+}
+.step1Date::-webkit-calendar-picker-indicator {
+    color: rgba(0, 0, 0, 0);
+    opacity: 1;
+    background-image: url(/images/calendar.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    padding: 3px;
+}
+
+.calendarIcon {
+  position: absolute;
+  top: 50%;
+  right: 12px; /* 아이콘의 오른쪽 여백 */
+  transform: translateY(-50%);
+  pointer-events: none; /* 아이콘이 입력 필드 클릭을 방해하지 않도록 */
+  z-index: 1; /* 입력 필드보다 위에 표시되도록 */
+
+  /* 기존 텍스트 아이콘 스타일 제거 또는 주석 처리 */
+  /* font-size: 1.2rem; */
+  /* color: #777; */
+
+  /* 새 이미지 아이콘 스타일 */
+  width: 20px;  /* 아이콘 이미지의 너비 */
+  height: 20px; /* 아이콘 이미지의 높이 */
+  background-image: url("/images/calendar.png"); /* public 폴더 기준 경로 */
+  background-repeat: no-repeat;
+  background-position: center; /* 이미지를 span 중앙에 위치 */
+  background-size: contain;    /* 이미지가 span 영역에 맞게 비율 유지하며 채움 */
+                               /* 또는 background-size: 20px 20px; 와 같이 고정 크기 지정 가능 */
+}
+
 .radioGroup {
   display: flex;
   gap: 10px;
@@ -483,11 +542,11 @@
   letter-spacing: 0%;
 }
 
-.radioLabelAsButton:hover {
+/* .radioLabelAsButton:hover {
   border-color: #2DA3E3;
-  border-width: 2px; /* 호버 시 테두리 두께 증가 */
+  border-width: 2px;
   background-color: #ffffff;
-}
+} */
 
 /* 실제 라디오 버튼(동그라미) 숨기기 */
 .hiddenRadioInput {
