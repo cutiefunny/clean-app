@@ -1,12 +1,11 @@
 // app/apply-cleaning/ApplyCleaningForm.js
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // useCallback 추가
 import { useRouter, useSearchParams } from 'next/navigation';
-import styles from './ApplyCleaning.module.css'; // 메인 CSS 모듈 공유
-import Header2 from '@/components/Header2'; // 헤더 컴포넌트
+import styles from './ApplyCleaning.module.css';
+import Header2 from '@/components/Header2';
 
-// 각 단계별 컴포넌트 import
 import Step1Service from './Step1Service';
 import Step2Location from './Step2Location';
 import Step3Building from './Step3Building';
@@ -17,7 +16,7 @@ const TOTAL_STEPS = 5;
 
 export default function ApplyCleaningForm() {
   const router = useRouter();
-  const searchParams = useSearchParams(); // 이 훅 때문에 Suspense가 필요합니다.
+  const searchParams = useSearchParams();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -35,19 +34,48 @@ export default function ApplyCleaningForm() {
     userPhoneNumber: '',
   });
 
-  useEffect(() => {
-    const initialServiceType = searchParams.get('serviceType');
-    if (initialServiceType) {
-      setFormData(prev => ({ ...prev, serviceType: initialServiceType }));
+   const didInitializeFromUrl = useRef(false);
+
+   useEffect(() => {
+  const serviceTypeFromQuery = searchParams.get('serviceType');
+    if (serviceTypeFromQuery && !didInitializeFromUrl.current && (!formData.serviceType || formData.serviceType === '')) {
+        setFormData(prevData => ({ ...prevData, serviceType: serviceTypeFromQuery }));
+        didInitializeFromUrl.current = true; // 초기화되었음을 표시
     }
-  }, [searchParams]);
+    }, [searchParams, formData.serviceType]);
+
+
+  const updateFormData = useCallback((stepData) => {
+    setFormData(prevFormData => ({ ...prevFormData, ...stepData }));
+  }, []);
+
+  // 각 단계별 유효성 검사 함수
+  const isStepValid = useCallback(() => {
+    switch (currentStep) {
+      case 1:
+        return !!formData.serviceType && !!formData.desiredDate && !!formData.desiredTime;
+      case 2:
+        return !!formData.addressFull; // 실제로는 더 상세한 검증 필요
+      case 3:
+        return !!formData.buildingType && Object.keys(formData.siteConditions || {}).length > 0; // siteConditions가 객체로 전달됨
+      case 4:
+        return formData.roomCount >= 1 && formData.bathroomCount >= 1;
+      case 5:
+        return !!formData.userName && !!formData.userPhoneNumber && /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, ''));
+      default:
+        return false;
+    }
+  }, [currentStep, formData]);
 
   const handleNextStep = () => {
+    if (!isStepValid()) {
+      alert("현재 단계의 필수 정보를 모두 입력하거나 선택해주세요.");
+      return;
+    }
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1);
-    } else {
-      handleSubmitApplication();
     }
+    // 마지막 단계의 "다음"은 handleSubmitApplication으로 처리됨
   };
 
   const handleHeaderBack = () => {
@@ -58,50 +86,65 @@ export default function ApplyCleaningForm() {
     }
   };
 
-  const updateFormData = (stepData) => {
-    setFormData(prev => ({ ...prev, ...stepData }));
-  };
+//   const updateFormData = useCallback((stepData) => {
+//     setFormData(prevFormData => ({ ...prevFormData, ...stepData }));
+//   }, []);
 
   const handleSubmitApplication = () => {
+    if (!isStepValid()) { // 최종 제출 전 유효성 검사
+      alert("이름과 휴대폰 번호를 정확히 입력해주세요. (또는 이전 단계 정보 누락)");
+      return;
+    }
     console.log("최종 신청 데이터:", formData);
     alert("견적 비교 신청이 완료되었습니다! (실제 로직은 구현 필요)");
     router.push('/');
   };
 
   const renderStepContent = () => {
+    // 이제 Step1-4는 onNext prop이 필요 없습니다.
     switch (currentStep) {
       case 1:
-        return <Step1Service formData={formData} updateFormData={updateFormData} onNext={handleNextStep} />;
+        return <Step1Service formData={formData} updateFormData={updateFormData} />;
       case 2:
-        return <Step2Location formData={formData} updateFormData={updateFormData} onNext={handleNextStep} />;
+        return <Step2Location formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return <Step3Building formData={formData} updateFormData={updateFormData} onNext={handleNextStep} />;
+        return <Step3Building formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return <Step4Space formData={formData} updateFormData={updateFormData} onNext={handleNextStep} />;
+        return <Step4Space formData={formData} updateFormData={updateFormData} />;
       case 5:
-        return <Step5Confirm formData={formData} onSubmit={handleSubmitApplication} />;
+        // Step5Confirm은 formData를 받아 표시하고, 이름/번호 입력 시 updateFormData를 호출합니다.
+        // 제출은 부모의 버튼이 담당합니다.
+        return <Step5Confirm formData={formData} updateFormData={updateFormData} />;
       default:
-        return <Step1Service formData={formData} updateFormData={updateFormData} onNext={handleNextStep} />;
+        return <Step1Service formData={formData} updateFormData={updateFormData} />;
     }
   };
 
   return (
-    <>
+    <div className={styles.formContainerWithFixedFooter}> {/* 이 div가 flex column 역할 */}
       <Header2
         title="청소신청"
         onBack={handleHeaderBack}
-        // style prop은 Header2 내부 디자인에 따라 조절 필요
-        // 예: style={{ display: 'flex', justifyContent: 'center' }}
       />
-
       <div className={styles.stepProgressContainer}>
         <span className={styles.stepProgressText}>
           {currentStep} / {TOTAL_STEPS}
         </span>
       </div>
-      <main className={styles.contentArea}>
+
+      <main className={styles.scrollableContentArea}>
         {renderStepContent()}
       </main>
-    </>
+
+      <div className={styles.fixedButtonFooter}>
+        <button
+          onClick={currentStep === TOTAL_STEPS ? handleSubmitApplication : handleNextStep}
+          className={styles.footerButton}
+          disabled={!isStepValid()} // 유효성 검사에 따라 버튼 비활성화
+        >
+          {currentStep === TOTAL_STEPS ? '견적 비교 신청' : '다음'}
+        </button>
+      </div>
+    </div>
   );
 }

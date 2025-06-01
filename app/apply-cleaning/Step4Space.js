@@ -1,15 +1,15 @@
 // app/apply-cleaning/Step4Space.js
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ApplyCleaning.module.css';
 
-const QuantityInput = ({ label, value, onDecrease, onIncrease }) => {
+const QuantityInput = ({ label, value, onDecrease, onIncrease, min = 0 }) => { // min prop 추가
   return (
     <div className={styles.quantityInputGroup}>
       <span className={styles.quantityLabel}>{label}</span>
       <div className={styles.quantityControls}>
-        <button onClick={onDecrease} className={styles.quantityButton} disabled={value <= 0 && label !== '베란다' && value <=0 }>-</button> {/* 방/화장실 0개 안되도록, 베란다는 0개 가능 */}
+        <button onClick={onDecrease} className={styles.quantityButton} disabled={value <= min}>-</button>
         <span className={styles.quantityValue}>{value}</span>
         <button onClick={onIncrease} className={styles.quantityButton}>+</button>
       </div>
@@ -17,23 +17,18 @@ const QuantityInput = ({ label, value, onDecrease, onIncrease }) => {
   );
 };
 
-export default function Step4Space({ formData, updateFormData, onNext }) {
+export default function Step4Space({ formData, updateFormData }) {
   const [roomCount, setRoomCount] = useState(formData.roomCount || 1);
   const [bathroomCount, setBathroomCount] = useState(formData.bathroomCount || 1);
   const [verandaCount, setVerandaCount] = useState(formData.verandaCount || 0);
   const [additionalRequest, setAdditionalRequest] = useState(formData.additionalRequest || '');
 
-  const handleNext = () => {
-    if (roomCount < 1 || bathroomCount < 1) {
-      alert("방과 화장실 개수는 최소 1개 이상이어야 합니다.");
-      return;
-    }
+  useEffect(() => {
     updateFormData({ roomCount, bathroomCount, verandaCount, additionalRequest });
-    onNext();
-  };
+  }, [roomCount, bathroomCount, verandaCount, additionalRequest, updateFormData]);
 
   return (
-    <div style ={{ backgroundColor: '#fff' }}>
+    <div className={styles.stepContainer}>
       <h2 className={styles.stepTitle}>공간 정보</h2>
       <div className={styles.formGroup}>
         <QuantityInput
@@ -41,6 +36,7 @@ export default function Step4Space({ formData, updateFormData, onNext }) {
           value={roomCount}
           onDecrease={() => setRoomCount(prev => Math.max(1, prev - 1))}
           onIncrease={() => setRoomCount(prev => prev + 1)}
+          min={1} // 방 개수 최소 1
         />
       </div>
       <div className={styles.formGroup}>
@@ -49,6 +45,7 @@ export default function Step4Space({ formData, updateFormData, onNext }) {
           value={bathroomCount}
           onDecrease={() => setBathroomCount(prev => Math.max(1, prev - 1))}
           onIncrease={() => setBathroomCount(prev => prev + 1)}
+          min={1} // 화장실 개수 최소 1
         />
       </div>
       <div className={styles.formGroup}>
@@ -57,6 +54,7 @@ export default function Step4Space({ formData, updateFormData, onNext }) {
           value={verandaCount}
           onDecrease={() => setVerandaCount(prev => Math.max(0, prev - 1))}
           onIncrease={() => setVerandaCount(prev => prev + 1)}
+          min={0} // 베란다는 0개 가능
         />
       </div>
 
@@ -71,7 +69,7 @@ export default function Step4Space({ formData, updateFormData, onNext }) {
           onChange={(e) => setAdditionalRequest(e.target.value)}
         />
       </div>
-      <button onClick={handleNext} className={styles.nextButton}>다음</button>
+      {/* "다음" 버튼은 ApplyCleaningForm.js에서 관리하므로 여기서 제거 */}
     </div>
   );
 }
