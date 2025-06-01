@@ -52,18 +52,18 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
   };
 
   // 커스텀 달력 아이콘 클릭 시 네이티브 날짜 선택기 표시
-//   const handleCalendarIconClick = () => {
-//     if (dateInputRef.current) {
-//       try {
-//         dateInputRef.current.showPicker();
-//       } catch (error) {
-//         // showPicker()가 지원되지 않는 일부 브라우저(예: 구형 Firefox)에서는
-//         // input에 focus()를 시도해볼 수 있으나, 항상 동작하지는 않습니다.
-//         console.warn("dateInputRef.current.showPicker() is not supported in this browser. Trying focus().", error);
-//         dateInputRef.current.focus();
-//       }
-//     }
-//   };
+  const handleCalendarIconClick = () => {
+    if (dateInputRef.current) {
+      try {
+        dateInputRef.current.showPicker();
+      } catch (error) {
+        // showPicker()가 지원되지 않는 일부 브라우저(예: 구형 Firefox)에서는
+        // input에 focus()를 시도해볼 수 있으나, 항상 동작하지는 않습니다.
+        console.warn("dateInputRef.current.showPicker() is not supported in this browser. Trying focus().", error);
+        dateInputRef.current.focus();
+      }
+    }
+  };
 
   const handleNext = () => {
     if (!serviceType || !desiredDate || !desiredTime) {
@@ -109,14 +109,14 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
             ref={dateInputRef} // ref 연결
           />
           {/* 커스텀 아이콘에 onClick 핸들러 추가 */}
-          {/* <span
+          <span
             className={styles.calendarIcon}
             onClick={handleCalendarIconClick}
             role="button" // 접근성을 위해 역할 명시
             aria-label="날짜 선택 달력 열기"
             tabIndex={0} // 키보드 포커스 가능하도록 (선택 사항)
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCalendarIconClick(); }} // 키보드 접근성 (선택 사항)
-          ></span> */}
+          ></span>
         </div>
       </div>
 

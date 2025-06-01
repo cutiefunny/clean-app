@@ -154,7 +154,7 @@
 .calendarIcon {
   position: absolute;
   top: 50%;
-  right: 12px; /* 아이콘의 오른쪽 여백 */
+  right: 16px; /* 아이콘의 오른쪽 여백 */
   transform: translateY(-50%);
   pointer-events: none; /* 아이콘이 입력 필드 클릭을 방해하지 않도록 */
   z-index: 1; /* 입력 필드보다 위에 표시되도록 */
