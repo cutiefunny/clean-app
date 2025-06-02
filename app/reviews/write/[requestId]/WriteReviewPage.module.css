@@ -27,13 +27,6 @@
   margin-bottom: 24px;
 }
 
-.ratingSection {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
 .starRatingContainer { /* 별들을 감싸는 전체 컨테이너 */
   display: flex; /* 별 이미지를 가로로 나열 */
   align-items: center;

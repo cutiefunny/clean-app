@@ -394,6 +394,8 @@
   /* border-bottom: 1px solid #f0f0f0; */ /* 구분선은 필요에 따라 */
   box-sizing: border-box;
   text-align: left; /* 내부 요소 왼쪽 정렬 */
+  max-width: 600px; /* 필요시 최대 너비 설정 */
+    margin: 0 auto; /* 중앙 정렬 */
 }
 
 .stepProgressText { /* 이 클래스가 알약 모양의 스타일을 가집니다. */
@@ -448,6 +450,8 @@
   /* 중요: 하단 고정 푸터의 높이만큼 아래쪽 패딩을 주어 내용이 가려지지 않도록 함 */
   padding-bottom: 100px; /* .fixedButtonFooter의 대략적인 높이 + 여유 공간 */
   background-color: #fff; /* 스크롤 영역의 배경색 */
+  max-width: 600px; /* 필요시 최대 너비 설정 */
+    margin: 0 auto; /* 중앙 정렬 */
 }
 
 .stepContainer { /* 각 Step 컴포넌트의 루트 div에 적용될 스타일 */
@@ -470,6 +474,8 @@
   z-index: 100;
   display: flex;
   justify-content: center;
+  max-width: 600px; /* 필요시 최대 너비 설정 */
+    margin: 0 auto; /* 중앙 정렬 */
 }
 
 .footerButton {

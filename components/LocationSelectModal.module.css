@@ -27,6 +27,8 @@
   display: flex;
   flex-direction: column; /* 내부 요소(헤더, 선택영역, 푸터)를 수직으로 배치 */
   overflow: hidden; /* 내부 스크롤은 .selectionArea에서 담당 */
+  max-width: 600px; /* 최대 너비 설정 */
+  
 }
 
 .modalHeader {

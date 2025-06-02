@@ -8,7 +8,7 @@ import Header2 from '@/components/Header2'; // 기존 헤더 컴포넌트 사용
 import styles from './WriteReviewPage.module.css';
 import Image from 'next/image'; // next/image 임포트
 
-// 간단한 별점 컴포넌트
+// 별점 컴포넌트
 const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
   const [isDragging, setIsDragging] = useState(false);
   const starContainerRef = useRef(null);
