@@ -47,7 +47,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     console.log(`인증번호 전송 시도: ${phoneNumber} (이름: ${name})`);
     // TODO: 실제 SMS 인증번호 발송 API 호출 로직 구현
     setIsCodeSent(true);
-    alert('인증번호가 전송되었습니다. (실제 전송 로직은 구현 필요)');
+    alert('인증번호가 전송되었습니다. (실제 전송 로직은 구현 필요. 테스트 해보시려면 123456을 입력하세요.)');
   };
 
   const handleVerifyAndProceed = async () => {
