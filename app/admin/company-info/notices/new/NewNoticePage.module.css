@@ -1,0 +1,85 @@
+/* /app/admin/company-info/notices/new/NewNoticePage.module.css */
+.pageContainer {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.input,
+.textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.primaryButton {
+  composes: button;
+  background-color: #007bff; /* Prime blue */
+  color: white;
+}
+
+.primaryButton:disabled {
+  background-color: #a0cfff;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  composes: button;
+  background-color: #6c757d; /* Secondary gray */
+  color: white;
+}
+
+.errorText {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}

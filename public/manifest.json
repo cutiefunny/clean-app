@@ -1,6 +1,6 @@
 {
-    "name": "PICK",
-    "short_name": "PICK",
+    "name": "PICKQ",
+    "short_name": "PICKQ",
     "description": "똑똑한 선택, 빠른 견적",
     "orientation": "portrait",
     "start_url": "/",

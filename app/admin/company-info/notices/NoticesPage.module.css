@@ -1,0 +1,165 @@
+/* /app/admin/company-info/notices/NoticesPage.module.css */
+.pageContainer {
+  padding: 20px;
+  background-color: white;
+}
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center; /* 이 부분을 추가하여 내부 아이템들을 가운데 정렬합니다. */
+}
+
+.datePickerContainer { /* 추가된 클래스 */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px; /* 일관성을 위해 추가 */
+}
+
+.searchInputContainer { /* 검색 아이콘 배치를 위한 컨테이너 */
+  position: relative;
+  display: flex; /* 내부 input과 button 정렬 */
+  align-items: center;
+  flex-grow: 1;
+  gap: 5px;
+}
+
+.searchInputWrapper { /* 아이콘과 input을 감싸는 wrapper */
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.searchInput {
+  composes: input; /* input 스타일 상속 */
+  flex-grow: 1;
+  min-width: 200px;
+  padding-left: 35px; /* 아이콘 공간 확보 */
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px; /* 위치 조정 */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none; /* 아이콘 클릭 방지 */
+}
+
+.button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #e9ecef;
+  color: #495057;
+  font-size: 14px; /* 일관성을 위해 추가 */
+}
+
+.primaryButton {
+  composes: button; /* button 스타일 상속 */
+  background-color: #6c757d;
+  color: white;
+}
+
+.actionButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.th {
+  border-bottom: 2px solid #dee2e6;
+  padding: 10px 8px;
+  text-align: left;
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.thCheckbox {
+  composes: th;
+  width: 40px;
+  text-align: center;
+}
+
+.thNumber {
+  composes: th;
+  width: 80px;
+  text-align: center;
+}
+
+.thDate {
+  composes: th;
+  width: 120px;
+  text-align: center;
+}
+
+.thActions {
+  composes: th;
+  width: 150px;
+  text-align: center;
+}
+
+.td {
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.centerTd {
+  composes: td;
+  text-align: center;
+}
+
+.actionTdInnerDiv {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.pageButton {
+  padding: 6px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  color: #495057;
+}
+
+.pageButtonActive {
+  composes: pageButton;
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d; /* 활성 시 테두리 색상 일치 */
+}
+
+.errorText { /* 에러 메시지용 스타일 추가 */
+  color: red;
+  margin-bottom: 15px; /* 테이블과의 간격 */
+}

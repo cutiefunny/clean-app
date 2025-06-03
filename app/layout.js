@@ -15,17 +15,17 @@ export default function RootLayout({ children }) {
 }
 
 export const metadata = {
-  applicationName: "PICK",
+  applicationName: "PICKQ",
   title: {
-    default: "PICK",
-    template: "PICK",
+    default: "PICKQ",
+    template: "PICKQ",
   },
   description: "똑똑한 선택, 빠른 견적",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PICK",
+    title: "PICKQ",
     // startUpImage: [],
   },
   formatDetection: {
@@ -33,10 +33,10 @@ export const metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "PICK",
+    siteName: "PICKQ",
     title: {
-      default: "PICK",
-      template: "PICK",
+      default: "PICKQ",
+      template: "PICKQ",
     },
     description: "똑똑한 선택, 빠른 견적",
   }
