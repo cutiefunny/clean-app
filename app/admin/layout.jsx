@@ -24,11 +24,15 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState({}); // 2-depth 메뉴 펼침 상태 관리
+  // *** 권한 상태 추가 ***
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [permissions, setPermissions] = useState(null);
 
   // 2-depth 메뉴 구조 정의
   const menuItems = [
     {
       name: '회사정보',
+      permissionKey: 'companyInfo', 
       children: [
         { name: '정보표시', path: '/admin/company-info/display' },
         { name: '고객지원', path: '/admin/company-info/notices' },
@@ -36,12 +40,14 @@ export default function AdminLayout({ children }) {
     },
     {
       name: '청소업체관리',
+      permissionKey: 'cleaners',
       children: [
         { name: '회원내역', path: '/admin/cleaners/members' },
       ],
     },
     {
       name: '리뷰관리',
+      permissionKey: 'reviews',
       children: [
         { name: '리뷰목록', path: '/admin/reviews/list' },
         { name: '리뷰 블라인드', path: '/admin/reviews/blind' },
@@ -49,6 +55,7 @@ export default function AdminLayout({ children }) {
     },
     {
       name: '청소신청 관리',
+      permissionKey: 'requests',
       children: [
         { name: '전송대기', path: '/admin/requests/pending' },
         { name: '전송', path: '/admin/requests/sent' },
@@ -56,6 +63,7 @@ export default function AdminLayout({ children }) {
     },
     {
       name: '포인트관리',
+      permissionKey: 'points',
       children: [
         { name: '포인트 사용내역', path: '/admin/points/usage' },
         { name: '포인트 지급', path: '/admin/points/grant' },
@@ -63,6 +71,7 @@ export default function AdminLayout({ children }) {
     },
     {
       name: '직원관리',
+      permissionKey: 'staff',
       children: [
         { name: '직원내역', path: '/admin/staff/list' },
         { name: '변경내역', path: '/admin/staff/history' },
@@ -75,9 +84,20 @@ export default function AdminLayout({ children }) {
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+
+        // *** 2. 로그인 시 ID 토큰에서 커스텀 클레임 가져오기 ***
+        try {
+          const idTokenResult = await currentUser.getIdTokenResult();
+          setIsSuperAdmin(idTokenResult.claims.superAdmin === true);
+          setPermissions(idTokenResult.claims.permissions || {}); // claims.permissions가 없으면 빈 객체로
+        } catch (error) {
+          console.error("Error getting user claims:", error);
+          setPermissions({}); // 에러 발생 시 권한 없음으로 처리
+        }
+
         // 2-depth 메뉴 초기 펼침 상태 설정: 현재 활성화된 1-depth 메뉴를 펼침
         const activeParent = menuItems.find(item =>
           item.children && item.children.some(child => pathname.startsWith(child.path))
@@ -87,6 +107,10 @@ export default function AdminLayout({ children }) {
         }
 
       } else {
+        // 로그아웃 시 상태 초기화
+        setUser(null);
+        setIsSuperAdmin(false);
+        setPermissions(null);
         if (pathname !== '/admin') {
           router.replace('/admin');
         }
@@ -113,6 +137,15 @@ export default function AdminLayout({ children }) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><p>Loading...</p></div>;
   }
   if (pathname === '/admin') return <>{children}</>;
+
+  // *** 3. 권한에 따라 메뉴 필터링 ***
+  const filteredMenuItems = isSuperAdmin
+    ? menuItems // 최종 관리자는 모든 메뉴를 봅니다.
+    : menuItems.filter(item => {
+        // 권한 키가 없거나(예: 대시보드), 권한이 'none'이 아닌 메뉴만 표시
+        // 'view' 또는 'edit' 권한이 있으면 메뉴가 보입니다.
+        return !item.permissionKey || (permissions && permissions[item.permissionKey] !== 'none');
+      });
 
 
   // 스타일 정의
@@ -182,7 +215,7 @@ export default function AdminLayout({ children }) {
             <div style={appTitleStyle}>청소대행앱</div>
         </Link>
         <nav style={navStyle}>
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const isActiveParent = item.children ? item.children.some(child => pathname.startsWith(child.path)) : (item.path ? pathname.startsWith(item.path) : false);
             const isOpen = openMenus[item.name] || false;
 
