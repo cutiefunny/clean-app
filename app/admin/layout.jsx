@@ -48,7 +48,7 @@ export default function AdminLayout({ children }) {
       ],
     },
     {
-      name: '청소신청 내역',
+      name: '청소신청 관리',
       children: [
         { name: '전송대기', path: '/admin/requests/pending' },
         { name: '전송', path: '/admin/requests/sent' },

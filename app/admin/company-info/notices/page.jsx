@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './NoticesPage.module.css';
+import styles from '../../board.module.css';
 // doc, deleteDoc 추가
 import {
   collection,
@@ -232,7 +232,7 @@ export default function NoticesPage() {
                 </td>
                 <td className={styles.td}>{notice.title}</td>
                 <td className={styles.centerTd}>{formatDate(notice.createdAt)}</td>
-                <td className={styles.centerTd}>
+                <td >
                   <div className={styles.actionTdInnerDiv}>
                     <button onClick={() => handleEdit(notice.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
                     <button onClick={() => handleDelete(notice.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>

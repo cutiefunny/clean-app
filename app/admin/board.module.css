@@ -1,0 +1,488 @@
+/* /app/admin/board.module.css */
+.pageContainer {
+  padding: 20px;
+  background-color: white;
+}
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+  /* justify-content: center; */ /* 이전 요청 사항, 필요시 주석 해제 */
+}
+
+.filterGroup { /* 필터 그룹을 위한 스타일 추가 */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filterDropdown { /* 드롭다운을 위한 기본 스타일 */
+  composes: input from global; /* .input 스타일 일부 상속 가정, 실제로는 select 스타일링 필요 */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  min-width: 120px; /* 최소 너비 */
+}
+
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.searchInputContainer {
+  display: flex;
+  align-items: center;
+  flex-grow: 1; /* 검색창이 남은 공간을 차지하도록 */
+  gap: 10px; /* 검색창과 검색버튼 사이 간격 */
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex; /* 아이콘을 input 안에 넣기 위함 */
+  align-items: center;
+  flex-grow: 1;
+}
+
+.searchInput {
+  composes: input;
+  width: 100%; /* Wrapper 안에서 꽉 차게 */
+  padding-left: 35px;
+  min-width: 250px; /* 검색창 최소 너비 */
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  pointer-events: none;
+}
+
+.button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #e9ecef;
+  color: #495057;
+  font-size: 14px;
+}
+
+.primaryButton {
+  composes: button;
+  background-color: #6c757d;
+  color: white;
+}
+
+.actionButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.tabContainer { /* 탭을 위한 스타일 추가 */
+  display: flex;
+  gap: 5px; /* 탭 간격 */
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tabButton {
+  padding: 10px 15px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  color: #495057;
+  font-size: 15px;
+  border-bottom: 3px solid transparent; /* 비활성 탭 하단선 투명 */
+}
+
+.tabButtonActive {
+  composes: tabButton;
+  color: #007bff; /* 활성 탭 텍스트 색상 */
+  font-weight: 600;
+  border-bottom: 3px solid #007bff; /* 활성 탭 하단선 */
+}
+
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.th {
+  border-bottom: 2px solid #dee2e6;
+  padding: 12px 8px; /* 패딩 약간 증가 */
+  text-align: center; /* 기본 중앙 정렬 */
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057; /* th 텍스트 색상 */
+}
+
+.thLeft { /* 좌측 정렬 th */
+  composes: th;
+  text-align: left;
+}
+
+
+.thCheckbox {
+  composes: th;
+  width: 40px;
+}
+
+.thNumber {
+  composes: th;
+  width: 60px; /* 번호 필드 약간 줄임 */
+}
+
+.thDate {
+  composes: th;
+  width: 100px; /* 날짜 필드 약간 줄임 */
+  text-align: center; /* 날짜는 중앙 정렬 */
+}
+
+/* .thDate, .thActions 등 특정 th 스타일은 필요에 따라 추가 */
+.thActions {
+  composes: th;
+  width: 120px; /* 관리 버튼 공간 약간 줄임 */
+}
+
+
+.td {
+  border-bottom: 1px solid #e9ecef;
+  padding: 10px 8px;
+  text-align: center; /* 기본 중앙 정렬 */
+  color: #212529; /* td 텍스트 색상 */
+}
+
+.tdLeft { /* 좌측 정렬 td */
+  composes: td;
+  text-align: left;
+}
+
+.centerTd {
+  composes: td;
+  text-align: center; /* 중앙 정렬 td */
+}
+
+.actionTdInnerDiv {
+  display: flex;
+  gap: 8px; /* 버튼 간격 증가 */
+  justify-content: center;
+  align-items: center;
+}
+
+.actionButton { /* 관리 버튼 공통 스타일 */
+    composes: button;
+    padding: 5px 10px; /* 버튼 크기 약간 작게 */
+    font-size: 13px;
+}
+
+.editButton {
+    composes: actionButton;
+    background-color: #5cb85c;
+    color: white;
+}
+
+.deleteButton {
+    composes: actionButton;
+    background-color: #d9534f;
+    color: white;
+}
+
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.pageButton {
+  padding: 6px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  color: #495057;
+}
+
+.pageButtonActive {
+  composes: pageButton;
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.errorText {
+  color: red;
+  margin-bottom: 15px;
+}
+
+.formPageContainer { /* 폼 페이지 전체 컨테이너 (기존 pageContainer 사용 가능) */
+  composes: pageContainer; /* 기존 pageContainer 스타일 상속 */
+  max-width: 800px; /* 폼 내용이 너무 넓어지지 않도록 최대 너비 설정 (선택 사항) */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* 레이블과 입력 필드 사이 간격 */
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+/* .input 스타일은 이미 존재한다고 가정 */
+/* .filterDropdown 스타일을 select 요소에 사용 가능 */
+.select {
+  composes: input; /* .input 스타일 상속 */
+  background-color: white; /* select 배경색 명시 */
+}
+
+
+.textarea {
+  composes: input; /* .input 스타일 상속 */
+  min-height: 150px;
+  resize: vertical;
+  font-family: inherit; /* 폰트 일관성 */
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px; /* 폼 요소와 버튼 그룹 사이 간격 */
+  justify-content: flex-end; /* 버튼들을 오른쪽으로 정렬 */
+}
+
+/* .button, .primaryButton 스타일은 이미 존재한다고 가정 */
+.secondaryButton {
+  composes: button;
+  background-color: #6c757d; /* 회색 계열 */
+  color: white;
+}
+
+/* .errorText 스타일은 이미 존재한다고 가정 */
+.successText { /* 성공 메시지용 스타일 추가 */
+  composes: errorText; /* 기본 구조는 에러 메시지와 유사하게 */
+  color: green; /* 성공 메시지는 초록색 */
+  background-color: #e6ffed; /* 연한 초록 배경 */
+  border: 1px solid #b7ebc9; /* 연한 초록 테두리 */
+  padding: 10px;
+  border-radius: 4px;
+}
+
+/* 리뷰 상세 페이지 스타일 */
+.detailPageContainer {
+  composes: pageContainer; /* 기존 pageContainer 스타일 상속 */
+  max-width: 900px; /* 상세 페이지 내용 최대 너비 */
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #fff; /* 상세 페이지 배경은 흰색으로 */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pageTitle { /* 이미 존재한다면, 필요에 따라 수정 */
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #eee;
+  text-align: left; /* 상세 페이지 제목은 좌측 정렬 */
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: auto 1fr; /* 라벨, 값 형태의 2단 그리드 */
+  gap: 15px 20px; /* 행 간격, 열 간격 */
+  align-items: baseline; /* 라벨과 값의 baseline 정렬 */
+  margin-bottom: 25px;
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  text-align: right; /* 라벨 우측 정렬 */
+  padding-right: 10px; /* 값과의 간격 */
+  white-space: nowrap; /* 라벨 줄바꿈 방지 */
+}
+
+.detailValue {
+  font-size: 15px;
+  color: #333;
+  word-break: break-word; /* 긴 내용 줄바꿈 */
+}
+
+.photoGallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px; /* 라벨과의 간격 */
+}
+
+.photoThumbnail {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex; /* 이미지 중앙 정렬용 */
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa; /* 이미지 로딩 전 배경 */
+}
+
+.photoThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.starRatingContainer {
+  display: flex;
+  align-items: center;
+}
+
+.starIconFilled {
+  color: #ffc107; /* 채워진 별 색상 */
+  font-size: 20px; /* 별 크기 */
+  margin-right: 2px;
+}
+
+.starIconEmpty {
+  color: #e0e0e0; /* 빈 별 색상 */
+  font-size: 20px;
+  margin-right: 2px;
+}
+
+.reviewContent {
+  composes: detailValue; /* detailValue 스타일 상속 */
+  white-space: pre-wrap; /* 줄바꿈 및 공백 유지 */
+  line-height: 1.6;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.deleteButtonContainer { /* 삭제 버튼 컨테이너 */
+  display: flex;
+  justify-content: flex-end; /* 버튼 오른쪽 정렬 */
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+/* 리뷰 상세 페이지 스타일 끝 */
+
+/* 청소신청 상세 페이지 스타일 */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 15px; /* 둥근 태그 */
+  font-size: 13px;
+  font-weight: 500;
+  background-color: #e9ecef;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.tagPrimary {
+  composes: tag;
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+/* 청소신청 상세 페이지 스타일 끝 */
+
+/* 설정 페이지용 테이블 스타일 */
+.settingsTable {
+  width: 100%;
+  border-collapse: collapse; /* 테두리 겹침 방지 */
+  border-top: 2px solid #333; /* 상단 구분선 */
+}
+
+.settingsTable tr {
+  border-bottom: 1px solid #eee; /* 각 행의 하단 구분선 */
+}
+
+.settingsLabelCell {
+  width: 180px; /* 라벨 컬럼 너비 고정 */
+  padding: 15px 20px;
+  font-weight: 600;
+  color: #555;
+  background-color: #f9f9f9;
+  text-align: left;
+  vertical-align: middle; /* 내용 수직 중앙 정렬 */
+}
+
+.settingsValueCell {
+  padding: 15px;
+  vertical-align: middle;
+}
+/* 설정 페이지용 테이블 스타일 끝 */
+
+/* 빈페이지 양식 */
+.centeredContentContainer {
+  display: flex;
+  flex-direction: column; /* 내부 요소들을 세로로 정렬 (필요시) */
+  align-items: center;    /* 수평 중앙 정렬 */
+  justify-content: center; /* 수직 중앙 정렬 */
+  text-align: center;      /* 텍스트 중앙 정렬 */
+  padding: 40px 20px;      /* 내부 여백 */
+  background-color: #fff;  /* 배경색 (pageContainer와 유사하게) */
+  border-radius: 8px;      /* 모서리 둥글게 (pageContainer와 유사하게) */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 그림자 (pageContainer와 유사하게) */
+  min-height: 300px;       /* 최소 높이를 주어 내용이 적어도 중앙에 오도록 */
+  /* 이 컨테이너는 AdminLayout의 children으로 들어갈 것이므로,
+     부모 레이아웃의 content 영역 크기에 따라 수직 중앙 정렬이 달라 보일 수 있습니다.
+     만약 content 영역 전체에서 수직 중앙 정렬을 원한다면,
+     이 컴포넌트 자체에 flex: 1; height: 100%; 등을 적용해야 할 수 있습니다.
+     여기서는 이 컨테이너 자체의 최소 높이를 주고 그 안에서 중앙 정렬합니다. */
+}
+
+.placeholderText {
+  font-size: 1.1rem; /* 16px ~ 18px 정도 */
+  color: #555;
+  line-height: 1.6;
+  max-width: 500px; /* 텍스트가 너무 길어지지 않도록 */
+}
+/* 빈페이지 양식 끝 */
