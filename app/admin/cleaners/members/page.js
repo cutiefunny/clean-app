@@ -16,9 +16,7 @@ import { db } from '@/lib/firebase/clientApp'; // Firebase db 객체 경로 확�
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../board.module.css'; // 공통 CSS Module 임포트
-// Firestore 관련 import는 실제 연동 시 추가
-// import { collection, getDocs, query, where, orderBy, Timestamp, getCountFromServer, doc, deleteDoc } from 'firebase/firestore';
-// import { db } from '@/lib/firebase/clientApp';
+import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트 임포트
 
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 
@@ -34,6 +32,8 @@ export default function CleanerMembersPage() {
   const [cleaners, setCleaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.cleaners === 'edit'); // 권한 체크
 
   const [selectedField, setSelectedField] = useState(fieldOptions[0]);
   const [selectedBusinessNameFilter, setSelectedBusinessNameFilter] = useState(businessNameFilterOptions[0]);
@@ -194,9 +194,11 @@ export default function CleanerMembersPage() {
         </div>
       </div>
 
-      <div className={styles.actionButtonContainer}>
-        <button onClick={handleRegisterNew} className={styles.primaryButton}>등록</button>
-      </div>
+      {canEdit && (
+        <div className={styles.actionButtonContainer}>
+          <button onClick={handleRegisterNew} className={styles.primaryButton}>등록</button>
+        </div>
+      )}
 
       <div className={styles.tabContainer}>
         {TABS.map(tab => (
@@ -219,7 +221,9 @@ export default function CleanerMembersPage() {
             <th className={styles.th}>담당자 연락처</th>
             <th className={styles.th}>가입신청</th>
             <th className={styles.th}>상태</th>
+            {canEdit && (
             <th className={styles.thActions}>관리</th>
+          )}
           </tr>
         </thead>
         {/* === tbody 조건부 렌더링 수정 === */}
@@ -247,12 +251,14 @@ export default function CleanerMembersPage() {
                 <td className={styles.centerTd}>{cleaner.contactPhone}</td>
                 <td className={styles.centerTd}>{cleaner.registrationStatus} ({formatDate(cleaner.registrationDate)})</td>
                 <td className={styles.centerTd}>{cleaner.operationalStatus}</td>
-                <td >
-                  <div className={styles.actionTdInnerDiv}>
-                    <button onClick={() => handleEdit(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
-                    <button onClick={() => handleDelete(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
-                  </div>
-                </td>
+                {canEdit && (
+                  <td >
+                    <div className={styles.actionTdInnerDiv}>
+                      <button onClick={() => handleEdit(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
+                      <button onClick={() => handleDelete(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           )}

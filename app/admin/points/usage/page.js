@@ -17,6 +17,7 @@ import {
   writeBatch // 비고 일괄 저장을 위해 추가
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp';
+import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트
 
 const ITEMS_PER_PAGE = 10;
 const TRANSACTION_TYPES = ["전체", "충전", "차감"];
@@ -28,6 +29,8 @@ export default function PointUsagePage() {
   const [initialHistory, setInitialHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
   // 필터 및 검색 상태
   const [startDate, setStartDate] = useState('');
@@ -184,9 +187,11 @@ export default function PointUsagePage() {
           <button onClick={handleFilterReset} className={styles.button} style={{backgroundColor: '#f8f9fa'}}>초기화</button>
         </div>
       </div>
-      <div className={styles.actionButtonContainer}>
-        <button onClick={handlePointSettings} className={styles.primaryButton}>포인트 설정</button>
-      </div>
+      { canEdit && (
+        <div className={styles.actionButtonContainer}>
+          <button onClick={handlePointSettings} className={styles.primaryButton}>포인트 설정</button>
+        </div>
+      )}
 
       {error && <p className={styles.errorText}>{error}</p>}
 
@@ -235,9 +240,11 @@ export default function PointUsagePage() {
         </tbody>
       </table>
       
-      <div className={styles.actionButtonContainer} style={{justifyContent: 'center', marginTop: '25px'}}>
-        <button onClick={handleSaveChanges} className={styles.button} style={{padding: '10px 30px'}}>저장</button>
-      </div>
+      { canEdit && (
+        <div className={styles.actionButtonContainer} style={{justifyContent: 'center', marginTop: '25px'}}>
+          <button onClick={handleSaveChanges} className={styles.button} style={{padding: '10px 30px'}}>저장</button>
+        </div>
+      )}
 
       {/* 페이지네이션 */}
       {!loading && totalPages > 1 && (

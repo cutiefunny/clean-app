@@ -16,6 +16,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp';
+import { useAuth } from '@/app/context/AuthContext';
 
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 
@@ -30,6 +31,8 @@ export default function SentRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
   const [selectedAssignedCompany, setSelectedAssignedCompany] = useState(ASSIGNED_COMPANY_OPTIONS[0]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -168,8 +171,9 @@ export default function SentRequestsPage() {
       {/* 액션 버튼 영역 */}
       <div className={styles.filterSection} style={{justifyContent: 'space-between'}}>
         <button onClick={handleExcelDownload} className={styles.button}>엑셀 다운</button>
-        {/* "일괄 매칭 선택 적용" 버튼은 이미지에서 비활성화된 것처럼 보이므로 disabled 처리 */}
-        <button className={styles.primaryButton} disabled={true} title="이미 전송된 내역입니다.">일괄 매칭 선택 적용</button>
+        { canEdit && (
+          <button className={styles.primaryButton} disabled={true} title="이미 전송된 내역입니다.">일괄 매칭 선택 적용</button>
+        )}
       </div>
 
       {error && <p className={styles.errorText}>{error}</p>}
@@ -184,7 +188,7 @@ export default function SentRequestsPage() {
             <th className={styles.thLeft}>신청자명</th>
             <th className={styles.th}>신청자 연락처</th>
             <th className={styles.th}>상태</th>
-            <th className={styles.thActions}>관리</th>
+            {canEdit && <th className={styles.thActions}>관리</th>}
           </tr>
         </thead>
         <tbody>
@@ -210,12 +214,14 @@ export default function SentRequestsPage() {
                 <td className={styles.tdLeft}>{req.applicantName}</td>
                 <td className={styles.centerTd}>{req.applicantContact}</td>
                 <td className={styles.centerTd}><span style={{color: '#28a745', fontWeight: 'bold'}}>{req.status}</span></td>
-                <td >
-                  <div className={styles.actionTdInnerDiv}>
-                    <button onClick={() => handleEdit(req.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
-                    <button onClick={() => handleDelete(req.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
-                  </div>
-                </td>
+                {canEdit && (
+                  <td >
+                    <div className={styles.actionTdInnerDiv}>
+                      <button onClick={() => handleEdit(req.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
+                      <button onClick={() => handleDelete(req.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))
           )}

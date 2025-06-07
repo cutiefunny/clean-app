@@ -15,6 +15,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp'; // Firebase db 객체
+import { useAuth } from '../../../context/AuthContext';
 
 const ITEMS_PER_PAGE = 10;
 const SEARCH_OPTIONS = ["이름", "회원번호(아이디)"];
@@ -22,6 +23,7 @@ const COLLECTION_NAME = "staffMembers";
 
 export default function StaffListPage() {
   const router = useRouter();
+  const { permissions, isSuperAdmin } = useAuth();
   const [staffList, setStaffList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,6 +37,8 @@ export default function StaffListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]); // 체크박스 선택용 (필요시 사용)
+
+  const canEditStaff = isSuperAdmin || permissions?.staff === 'edit';
 
   // 디바운싱
   useEffect(() => {
@@ -142,7 +146,9 @@ export default function StaffListPage() {
       </div>
       
       <div className={styles.actionButtonContainer}>
-        <button onClick={handleCreateNew} className={styles.primaryButton}>신규</button>
+        {canEditStaff && (
+          <button onClick={handleCreateNew} className={styles.primaryButton}>신규</button>
+        )}
       </div>
 
       {error && <p className={styles.errorText}>{error}</p>}
@@ -156,7 +162,7 @@ export default function StaffListPage() {
             <th className={styles.thLeft}>직원명</th>
             <th className={styles.th}>휴대폰번호</th>
             <th className={styles.thLeft}>이메일</th>
-            <th className={styles.thActions}>관리</th>
+            { canEditStaff && <th className={styles.thActions}>관리</th> }
           </tr>
         </thead>
         <tbody>
@@ -171,12 +177,14 @@ export default function StaffListPage() {
                 <td className={styles.tdLeft}>{staff.staffName}</td>
                 <td className={styles.centerTd}>{staff.phone}</td>
                 <td className={styles.tdLeft}>{staff.email}</td>
-                <td >
-                    <div className={styles.actionTdInnerDiv}>
-                    <button onClick={() => handleEdit(staff.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
-                    <button onClick={() => handleDelete(staff.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
-                    </div>
-                </td>
+                {canEditStaff && (
+                    <td >
+                        <div className={styles.actionTdInnerDiv}>
+                        <button onClick={() => handleEdit(staff.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
+                        <button onClick={() => handleDelete(staff.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
+                        </div>
+                    </td>
+                )}
               </tr>
             ))
           )}

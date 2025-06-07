@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { doc, getDoc, deleteDoc, Timestamp } from 'firebase/firestore'; // Timestamp 추가
 import { db, auth } from '@/lib/firebase/clientApp'; // Firebase 경로
 import styles from '../../../board.module.css'; // 공통 CSS Module (4단계 상위)
+import { useAuth } from '../../../../context/AuthContext'; // 인증 컨텍스트
 
 const COLLECTION_NAME = "reviews";
 
@@ -34,6 +35,9 @@ export default function ReviewDetailPage() {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.reviews === 'edit');
 
   const fetchReviewDetail = useCallback(async () => {
     if (!reviewId) {
@@ -165,11 +169,13 @@ export default function ReviewDetailPage() {
         </div>
       </div>
 
-      <div className={styles.deleteButtonContainer}>
-        <button onClick={handleDelete} className={`${styles.button} ${styles.deleteButton}`}> {/* board.module.css의 deleteButton 클래스 사용 */}
-          삭제
-        </button>
-      </div>
+      {canEdit && (
+        <div className={styles.deleteButtonContainer}>
+          <button onClick={handleDelete} className={`${styles.button} ${styles.deleteButton}`}> {/* board.module.css의 deleteButton 클래스 사용 */}
+            삭제
+          </button>
+        </div>
+      )}
     </div>
   );
 }

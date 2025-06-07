@@ -16,6 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp';
+import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트
 
 const ITEMS_PER_PAGE = 10;
 const CLEANERS_COLLECTION = "cleaners";
@@ -92,6 +93,8 @@ export default function PointGrantPage() {
   const [cleaners, setCleaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
   // 필터 상태
   const [filterType, setFilterType] = useState('청소업체명');
@@ -272,9 +275,11 @@ export default function PointGrantPage() {
         </div>
       </div>
 
-      <div className={styles.actionButtonContainer}>
-        <button onClick={handleBatchGrant} className={styles.primaryButton}>포인트 일괄 지급</button>
-      </div>
+      { canEdit && (
+        <div className={styles.actionButtonContainer}>
+          <button onClick={handleBatchGrant} className={styles.primaryButton}>포인트 일괄 지급</button>
+        </div>
+      )}
 
       <table className={styles.table}>
         <thead>
@@ -285,8 +290,12 @@ export default function PointGrantPage() {
             <th className={styles.th}>보유 포인트</th>
             <th className={styles.th}>마지막 지급일시</th>
             <th className={styles.thLeft}>지급내용</th>
-            <th className={styles.th}>포인트 지급</th>
+            { canEdit && (
+              <th className={styles.th}>포인트 지급</th>
+            )}
+            { canEdit && (
             <th className={styles.thActions}>관리</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -301,15 +310,17 @@ export default function PointGrantPage() {
                 <td className={styles.centerTd}>{(cleaner.currentPoints || 0).toLocaleString()}</td>
                 <td className={styles.centerTd}>{formatDate(cleaner.lastGrantDate)}</td>
                 <td className={styles.tdLeft}>{/* 최근 지급내용 표시 로직 필요 */}</td>
-                <td className={styles.centerTd}>
+                { canEdit && (<td className={styles.centerTd}>
                     <button className={styles.primaryButton} style={{padding: '5px 12px'}} onClick={() => openGrantModal(cleaner)}>지급</button>
-                </td>
+                </td>)}
+                { canEdit && (
                 <td >
                   <div className={styles.actionTdInnerDiv}>
                     <button onClick={() => handleEdit(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
                     <button onClick={() => handleDelete(cleaner.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
                   </div>
                 </td>
+                )}
               </tr>
             ))
           )}

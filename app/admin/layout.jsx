@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '../../lib/firebase/clientApp';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 
 // 아이콘 예시 (실제로는 SVG 아이콘 라이브러리 사용 권장)
 const ChevronDownIcon = ({ size = 16, style,isOpen }) => (
@@ -18,15 +19,15 @@ const MenuItemIcon = ({ size = 18, style}) => ( // 일반 메뉴 아이콘
 );
 
 
-export default function AdminLayout({ children }) {
-  const [user, setUser] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+function AdminLayoutContent({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState({}); // 2-depth 메뉴 펼침 상태 관리
   // *** 권한 상태 추가 ***
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [permissions, setPermissions] = useState(null);
+  const { user, loadingAuth, isSuperAdmin, permissions } = useAuth();
+
+  console.log("AdminLayoutContent user:", user);
+  console.log("AdminLayoutContent permissions:", permissions);
 
   // 2-depth 메뉴 구조 정의
   const menuItems = [
@@ -79,46 +80,33 @@ export default function AdminLayout({ children }) {
     },
     {
       name: '광고(배너)관리',
+      permissionKey: 'advertisements',
       path: '/admin/advertisements', // 1-depth 메뉴
+    },
+    {
+      name: '업체소개관리',
+      permissionKey: 'companyIntroduction',
+      path: '/admin/company-introduction', // 1-depth 메뉴
     },
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-
-        // *** 2. 로그인 시 ID 토큰에서 커스텀 클레임 가져오기 ***
-        try {
-          const idTokenResult = await currentUser.getIdTokenResult();
-          setIsSuperAdmin(idTokenResult.claims.superAdmin === true);
-          setPermissions(idTokenResult.claims.permissions || {}); // claims.permissions가 없으면 빈 객체로
-        } catch (error) {
-          console.error("Error getting user claims:", error);
-          setPermissions({}); // 에러 발생 시 권한 없음으로 처리
+        if (!loadingAuth) {
+            if (!user) {
+                 if (pathname !== '/admin') {
+                    router.replace('/admin');
+                }
+            } else {
+                // 메뉴 초기 펼침 상태 설정
+                const activeParent = menuItems.find(item =>
+                    item.children && item.children.some(child => pathname.startsWith(child.path))
+                );
+                if (activeParent) {
+                    setOpenMenus(prev => ({ ...prev, [activeParent.name]: true }));
+                }
+            }
         }
-
-        // 2-depth 메뉴 초기 펼침 상태 설정: 현재 활성화된 1-depth 메뉴를 펼침
-        const activeParent = menuItems.find(item =>
-          item.children && item.children.some(child => pathname.startsWith(child.path))
-        );
-        if (activeParent) {
-          setOpenMenus(prev => ({ ...prev, [activeParent.name]: true }));
-        }
-
-      } else {
-        // 로그아웃 시 상태 초기화
-        setUser(null);
-        setIsSuperAdmin(false);
-        setPermissions(null);
-        if (pathname !== '/admin') {
-          router.replace('/admin');
-        }
-      }
-      setLoadingAuth(false);
-    });
-    return () => unsubscribe();
-  }, [router, pathname]); // menuItems를 의존성 배열에서 제거 (렌더링 시 고정값으로 가정)
+    }, [user, loadingAuth, router, pathname]);
 
   const handleLogout = async () => {
     try {
@@ -138,14 +126,20 @@ export default function AdminLayout({ children }) {
   }
   if (pathname === '/admin') return <>{children}</>;
 
+  if (loadingAuth || (!user && pathname !== '/admin')) {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><p>Loading...</p></div>;
+    }
+    if (pathname === '/admin') return <>{children}</>;
+
   // *** 3. 권한에 따라 메뉴 필터링 ***
   const filteredMenuItems = isSuperAdmin
-    ? menuItems // 최종 관리자는 모든 메뉴를 봅니다.
+    ? menuItems
     : menuItems.filter(item => {
-        // 권한 키가 없거나(예: 대시보드), 권한이 'none'이 아닌 메뉴만 표시
-        // 'view' 또는 'edit' 권한이 있으면 메뉴가 보입니다.
+        if (item.permissionKey === 'companyInfo') {
+            return false; // superAdmin을 제외하고 companyInfo 메뉴를 보이지 않도록 설정
+        }
         return !item.permissionKey || (permissions && permissions[item.permissionKey] !== 'none');
-      });
+    });
 
 
   // 스타일 정의
@@ -269,5 +263,13 @@ export default function AdminLayout({ children }) {
       </aside>
       <main style={contentStyle}>{children}</main>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }) {
+  return (
+    <AuthProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </AuthProvider>
   );
 }

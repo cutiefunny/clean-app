@@ -128,6 +128,7 @@
   background-color: #f8f9fa;
   font-weight: 600;
   color: #495057; /* th 텍스트 색상 */
+  white-space: nowrap;
 }
 
 .thLeft { /* 좌측 정렬 th */
@@ -261,6 +262,22 @@
   font-size: 14px;
   font-weight: 500;
   color: #555;
+}
+
+.formGroup_checkbox {
+  display: flex;
+  flex-direction: row; /* "column"에서 "row"로 변경 */
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 15px; /* 레이블과 입력 필드 사이 간격 */
+}
+
+.label_checkbox {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  width: 80px; /* [추가] 레이블 너비 고정 */
+  text-align: left; /* [추가] 텍스트 좌측 정렬 */
+  padding-right: 10px; /* [추가] 입력 필드와의 간격을 위해 */
 }
 
 /* .input 스타일은 이미 존재한다고 가정 */

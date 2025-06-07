@@ -9,6 +9,7 @@ import { collection, getDocs, query, where, orderBy, Timestamp, getCountFromServ
 import { db } from '@/lib/firebase/clientApp';
 import ExcelJS from 'exceljs';        // exceljs 라이브러리 임포트
 import { saveAs } from 'file-saver'; // file-saver 라이브러리 임포트
+import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트
 
 // 아이콘 SVG (필요시 사용)
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -24,6 +25,8 @@ export default function PendingRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { permissions, isSuperAdmin } = useAuth();
+  const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
   // 필터 및 검색 상태 (이전과 동일)
   const [selectedAssignedCompany, setSelectedAssignedCompany] = useState(ASSIGNED_COMPANY_OPTIONS[0]);
@@ -270,7 +273,9 @@ export default function PendingRequestsPage() {
       {/* 액션 버튼 영역 */}
       <div className={styles.filterSection} style={{justifyContent: 'space-between'}}> {/* 버튼들을 양쪽으로 배치 */}
         <button onClick={handleExcelDownload} className={styles.button}>엑셀 다운</button>
+        {canEdit && (
         <button onClick={handleBatchMatchApply} className={styles.primaryButton}>일괄 매칭 선택 적용</button>
+        )}
       </div>
 
 
@@ -287,7 +292,7 @@ export default function PendingRequestsPage() {
             <th className={styles.thLeft}>신청자명</th>
             <th className={styles.th}>신청자 연락처</th>
             <th className={styles.th}>상태</th>
-            <th className={styles.thActions}>관리</th>
+            { canEdit && <th className={styles.thActions}>관리</th> }
           </tr>
         </thead>
         <tbody>
@@ -303,12 +308,15 @@ export default function PendingRequestsPage() {
                 <td className={styles.tdLeft}>{req.applicantName}</td>
                 <td className={styles.centerTd}>{req.applicantContact}</td>
                 <td className={styles.centerTd}><span style={{color: '#dc3545', fontWeight: 'bold'}}>{req.status}</span></td>
+                { canEdit && (
                 <td >
                   <div className={styles.actionTdInnerDiv}>
                     <button onClick={() => handleEdit(req.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
                     <button onClick={() => handleDelete(req.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
                   </div>
                 </td>
+                )}
+
               </tr>
             ))
           )}
