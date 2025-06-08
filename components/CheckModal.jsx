@@ -1,32 +1,29 @@
-// /components/CheckModal.js (수정된 코드)
+// /components/CheckModal.js (Firebase 익명 로그인 추가)
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import styles from './CheckModal.module.css';
 import useSmsVerification from '@/hooks/useSmsVerification';
 
+// Firestore 및 Firebase Auth 모듈 임포트
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { getAuth, signInAnonymously } from "firebase/auth";
+import { db } from '@/lib/firebase/clientApp';
+
 export default function CheckModal({ isOpen, onClose, onVerified }) {
-  // 1. 상태 변수 정리: 불필요한 state를 제거하고 이름을 명확하게 합니다.
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationInput, setVerificationInput] = useState(''); // 사용자가 입력한 인증번호
+  const [verificationInput, setVerificationInput] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
-  const [componentError, setComponentError] = useState(''); // 컴포넌트 내부 유효성 검사 오류
+  const [componentError, setComponentError] = useState('');
 
-  // 2. useSmsVerification 훅에서 필요한 모든 값을 구조 분해 할당합니다.
-  const { 
-    sendVerificationCode, 
-    loading, 
-    error: apiError, // API 에러는 이름을 변경하여 구분
-    data 
-  } = useSmsVerification();
+  const { sendVerificationCode, loading, error: apiError } = useSmsVerification();
   
-  // 서버에서 받은 실제 인증번호를 저장할 state
   const [sentCodeFromServer, setSentCodeFromServer] = useState('');
 
-  // 모달이 닫힐 때 모든 상태를 초기화합니다.
   useEffect(() => {
     if (!isOpen) {
+      // 모달이 닫힐 때 모든 상태 초기화
       setName('');
       setPhoneNumber('');
       setVerificationInput('');
@@ -36,56 +33,84 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     }
   }, [isOpen]);
 
-  // 인증번호 발송 함수
   const handleSendCode = async () => {
+    // 1. 입력 유효성 검사
     if (!name.trim() || !phoneNumber.trim()) {
       setComponentError('이름과 휴대폰 번호를 모두 입력해주세요.');
       return;
     }
-    // 휴대폰 번호 형식 유효성 검사
     if (!/^\d{10,11}$/.test(phoneNumber.replace(/-/g, ''))) {
       setComponentError('올바른 휴대폰 번호를 입력해주세요.');
       return;
     }
-    
-    setComponentError(''); // 기존 오류 메시지 초기화
-    
-    // 3. sendVerificationCode에 올바른 `phoneNumber` 상태를 전달합니다.
-    const result = await sendVerificationCode(phoneNumber);
-    
-    // 4. API 호출 성공 시에만 후속 처리
-    if (result && result.success) {
-      alert('인증번호가 발송되었습니다.');
-      setIsCodeSent(true);
-      setSentCodeFromServer(result.verificationCode); // 서버에서 받은 인증번호 저장
+    setComponentError('');
+
+    try {
+      // 2. Firestore `requests` 컬렉션 조회
+      const requestsRef = collection(db, 'requests');
+      const q = query(
+        requestsRef,
+        where('applicantName', '==', name.trim()),
+        where('applicantContact', '==', phoneNumber.replace(/-/g, ''))
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        alert('일치하는 요청 내역이 없습니다. 이름과 휴대폰 번호를 다시 확인해주세요.');
+        return;
+      }
+
+      // 4. SMS 발송 진행
+      const result = await sendVerificationCode(phoneNumber);
+      if (result && result.success) {
+        alert('인증번호가 발송되었습니다.');
+        setIsCodeSent(true);
+        setSentCodeFromServer(result.verificationCode);
+      }
+      
+    } catch (err) {
+      console.error("Error during Firestore query or SMS sending:", err);
+      setComponentError('인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
-    // 실패 시에는 useSmsVerification 훅의 apiError가 자동으로 설정됩니다.
   };
 
   // 인증번호 확인 및 다음 단계 진행 함수
-  const handleVerifyAndProceed = () => {
+  const handleVerifyAndProceed = async () => { // async로 변경
     if (!verificationInput.trim()) {
       setComponentError('인증번호를 입력해주세요.');
       return;
     }
-
     setComponentError('');
 
-    // 5. 서버에서 받은 실제 인증번호와 사용자가 입력한 번호를 비교합니다.
-    if (verificationInput === sentCodeFromServer) {
-      alert("본인인증에 성공했습니다.");
-      const userAuthData = {
-        name: name,
-        phoneNumber: phoneNumber,
-        verifiedAt: new Date().toISOString(),
-        isVerified: true
-      };
-      sessionStorage.setItem('identityVerifiedUser', JSON.stringify(userAuthData));
+    const isCodeCorrect = verificationInput === sentCodeFromServer;
 
-      if (onVerified) {
-        onVerified(userAuthData); // 인증된 데이터를 부모 컴포넌트로 전달
+    if (isCodeCorrect) {
+      try {
+        // --- [추가] Firebase 익명 로그인 실행 ---
+        const auth = getAuth();
+        const userCredential = await signInAnonymously(auth);
+        console.log("익명 로그인 성공:", userCredential.user.uid);
+        // ------------------------------------
+
+        alert("본인인증에 성공했습니다.");
+        
+        const userAuthData = {
+          name: name,
+          phoneNumber: phoneNumber,
+          verifiedAt: new Date().toISOString(),
+          isVerified: true,
+          uid: userCredential.user.uid // 익명 로그인 UID 저장
+        };
+        sessionStorage.setItem('identityVerifiedUser', JSON.stringify(userAuthData));
+
+        if (onVerified) {
+          onVerified(userAuthData);
+        }
+        onClose();
+      } catch(authError) {
+        console.error("Firebase 익명 로그인 실패:", authError);
+        setComponentError("인증 세션을 생성하는 데 실패했습니다. 다시 시도해주세요.");
       }
-      onClose(); // 모달 닫기
     } else {
       setComponentError('인증번호가 올바르지 않습니다.');
     }
@@ -112,7 +137,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
               placeholder="이름을 입력해주세요." 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              disabled={isCodeSent}
+              disabled={loading || isCodeSent}
             />
           </div>
           <div className={styles.inputGroup}>
@@ -126,10 +151,10 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
                 value={phoneNumber} 
                 onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))} 
                 maxLength={11}
-                disabled={isCodeSent}
+                disabled={loading || isCodeSent}
               />
               <button onClick={handleSendCode} className={styles.sendCodeButton} disabled={loading || isCodeSent}>
-                {loading ? '전송중...' : (isCodeSent ? '재전송' : '전송')}
+                {loading ? '확인중...' : (isCodeSent ? '재전송' : '전송')}
               </button>
             </div>
           </div>
@@ -147,7 +172,6 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
               />
             </div>
           )}
-          {/* 6. 컴포넌트 유효성 에러 또는 API 에러를 표시합니다. */}
           {(componentError || apiError) && <p className={styles.errorMessage}>{componentError || apiError}</p>}
           <p className={styles.infoText}>*보안 이슈로 이름과 휴대폰 번호로 본인인증을 완료해야 내 청소 내역을 확인할 수 있습니다.</p>
         </div>

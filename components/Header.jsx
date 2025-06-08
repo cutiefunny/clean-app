@@ -1,16 +1,26 @@
-// Header.js (또는 해당 파일 경로)
-'use client'; // useState, useRouter 사용을 위해 추가
+// /components/Header.js (세션 확인 로직 추가)
+'use client'; 
 
-import React, { useState } from 'react'; // useState import
-import CheckModal from './CheckModal'; // 경로가 맞는지 확인
-import { useRouter } from 'next/navigation'; // useRouter import
+import React, { useState } from 'react';
+import CheckModal from './CheckModal'; 
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter(); // useRouter 훅 사용
+  const router = useRouter();
 
   const handleOpenModal = () => {
-    setIsModalOpen(true);
+    // 1. 세션 스토리지에서 'identityVerifiedUser' 키 확인
+    const storedAuth = sessionStorage.getItem('identityVerifiedUser');
+
+    // 2. 저장된 인증 정보가 있을 경우, /requests 페이지로 바로 이동
+    if (storedAuth) {
+      console.log('세션에 인증된 사용자가 있습니다. /requests 페이지로 이동합니다.');
+      router.push('/requests');
+    } else {
+      // 3. 인증 정보가 없을 경우에만 본인인증 모달을 엶
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -29,8 +39,8 @@ const Header = () => {
       <header style={{ width: '100%', maxWidth: '600px', margin: '0 auto', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 50 }}> {/* 헤더 고정 예시 */}
         <div style={{ maxWidth: '1280px', margin: '0 auto', paddingLeft: '24px', paddingRight: '24px' }}>
           <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            {/* Left Section (로고) - 클릭 시 새로고침 대신 홈으로 이동 권장 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => router.push('/')}> {/* 홈으로 이동 */}
+            {/* Left Section (로고) - 클릭 시 홈으로 이동 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }} onClick={() => router.push('/')}> 
               <div style={{ flexShrink: '0' }}>
                 <img
                   src="/images/logo.png" // public/images/logo.png 에 로고 이미지 필요
@@ -46,7 +56,7 @@ const Header = () => {
             {/* Right Section ("내 신청내역") */}
             <div
               style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-              onClick={handleOpenModal} // window.location.href 대신 모달 열기 함수 호출
+              onClick={handleOpenModal} // 수정된 핸들러 호출
             >
               <div style={{ flexShrink: '0' }}>
                 <img

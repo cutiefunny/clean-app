@@ -1,14 +1,18 @@
-// app/reviews/write/[requestId]/page.js
+// /app/reviews/write/[requestId]/page.js (오류 수정 및 로직 개선)
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link'; // 뒤로가기 등에 사용 가능
-import Header2 from '@/components/Header2'; // 기존 헤더 컴포넌트 사용 또는 새 헤더
+import Header2 from '@/components/Header2';
 import styles from './WriteReviewPage.module.css';
-import Image from 'next/image'; // next/image 임포트
+import Image from 'next/image';
 
-// 별점 컴포넌트
+// Firestore 및 Storage 모듈 임포트
+import { db, storage } from '@/lib/firebase/clientApp';
+import { doc, getDoc, addDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+// 별점 컴포넌트 (기존과 동일)
 const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
   const [isDragging, setIsDragging] = useState(false);
   const starContainerRef = useRef(null);
@@ -18,21 +22,13 @@ const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
     const rect = starContainerRef.current.getBoundingClientRect();
     let clientX;
 
-    if (event.touches && event.touches.length > 0) {
-      clientX = event.touches[0].clientX;
-    } else if (event.changedTouches && event.changedTouches.length > 0) {
-      clientX = event.changedTouches[0].clientX;
-    } else if (typeof event.clientX !== 'undefined') {
-      clientX = event.clientX;
-    } else {
-      return rating;
-    }
+    if (event.touches && event.touches.length > 0) clientX = event.touches[0].clientX;
+    else if (event.changedTouches && event.changedTouches.length > 0) clientX = event.changedTouches[0].clientX;
+    else if (typeof event.clientX !== 'undefined') clientX = event.clientX;
+    else return rating;
 
     const offsetX = clientX - rect.left;
-    const containerWidth = rect.width; // 전체 컨테이너 너비
-    // 각 별 이미지를 감싸는 요소가 있다면 그 요소의 너비를 사용하거나,
-    // 컨테이너 너비를 별의 개수로 나누어 각 별이 차지하는 영역을 추정합니다.
-    // 여기서는 컨테이너 너비를 별 개수로 나눕니다.
+    const containerWidth = rect.width;
     const effectiveStarWidth = containerWidth / maxRating;
 
     let calculatedRating = Math.ceil(offsetX / effectiveStarWidth);
@@ -41,7 +37,6 @@ const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
   }, [maxRating, rating]);
 
   const handleInteractionStart = (event) => {
-    // event.preventDefault(); // 기본 동작 방지 (필요시)
     setIsDragging(true);
     const newRating = calculateRatingFromEvent(event);
     onRatingChange(newRating);
@@ -49,61 +44,43 @@ const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
 
   const handleInteractionMove = (event) => {
     if (isDragging) {
-      // event.preventDefault();
       const newRating = calculateRatingFromEvent(event);
       onRatingChange(newRating);
     }
   };
 
   const handleInteractionEnd = () => {
-    if (isDragging) {
-      setIsDragging(false);
-    }
+    if (isDragging) setIsDragging(false);
   };
 
   useEffect(() => {
-    const endDragGlobal = () => {
-      if (isDragging) {
-        setIsDragging(false);
-      }
-    };
+    const endDragGlobal = () => { if (isDragging) setIsDragging(false); };
     window.addEventListener('mouseup', endDragGlobal);
     window.addEventListener('touchend', endDragGlobal);
-    document.addEventListener('mouseleave', endDragGlobal); // 마우스가 창 밖으로 나갈 때
-
     return () => {
       window.removeEventListener('mouseup', endDragGlobal);
       window.removeEventListener('touchend', endDragGlobal);
-      document.removeEventListener('mouseleave', endDragGlobal);
     };
   }, [isDragging]);
 
-  const starsToRender = [];
-  for (let i = 1; i <= maxRating; i++) {
-    starsToRender.push(
-      // 각 이미지를 감싸는 div를 추가하여 클릭/터치 영역을 명확히 하고 스타일링 용이하게 함
-      <div key={i} className={styles.starImageWrapper}>
-        <Image
-          src={rating >= i ? '/images/Star-full.png' : '/images/Star-empty.png'}
-          alt={rating >= i ? `${i}번째 채워진 별` : `${i}번째 빈 별`}
-          width={36} // 원하는 별 이미지의 너비 (픽셀 단위)
-          height={36} // 원하는 별 이미지의 높이 (픽셀 단위)
-          className={styles.starImage} // 이미지 자체에 대한 스타일 (필요시)
-          priority={i <= rating} // 초기 렌더링 시 채워진 별은 우선 로드 (선택적)
-        />
-      </div>
-    );
-  }
+  const starsToRender = Array.from({ length: maxRating }, (_, i) => (
+    <div key={i + 1} className={styles.starImageWrapper}>
+      <Image
+        src={rating >= i + 1 ? '/images/Star-full.png' : '/images/Star-empty.png'}
+        alt={`${i + 1}번째 별`}
+        width={36} height={36}
+        className={styles.starImage}
+        priority={i + 1 <= rating}
+      />
+    </div>
+  ));
 
   return (
     <div
       ref={starContainerRef}
-      className={styles.starRatingContainer} // 새 클래스 또는 기존 .starRating 사용
-      onMouseDown={handleInteractionStart}
-      onMouseMove={handleInteractionMove}
-      onMouseLeave={handleInteractionEnd} // 컨테이너 벗어날 때 드래그 종료
-      onTouchStart={handleInteractionStart}
-      onTouchMove={handleInteractionMove}
+      className={styles.starRatingContainer}
+      onMouseDown={handleInteractionStart} onMouseMove={handleInteractionMove} onMouseUp={handleInteractionEnd} onMouseLeave={handleInteractionEnd}
+      onTouchStart={handleInteractionStart} onTouchMove={handleInteractionMove} onTouchEnd={handleInteractionEnd}
       style={{ touchAction: 'pan-y' }}
     >
       {starsToRender}
@@ -111,125 +88,215 @@ const StarRating = ({ maxRating = 5, rating, onRatingChange }) => {
   );
 };
 
+
 export default function WriteReviewPage() {
   const router = useRouter();
   const params = useParams();
-  const requestId = params ? params.requestId : null;
+  const requestId = params?.requestId;
 
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
-  const [photos, setPhotos] = useState([]); // 선택된 사진 파일들 (File 객체) 또는 URL
+  const [photos, setPhotos] = useState([]); // string(URL) 또는 File 객체 저장
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [existingReviewId, setExistingReviewId] = useState(null);
+  const [requestDetails, setRequestDetails] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  
   const MAX_TEXT_LENGTH = 1000;
 
-  // requestId가 있다면, 해당 요청에 대한 정보를 가져와서 보여줄 수도 있습니다 (선택 사항)
-  // useEffect(() => {
-  //   if (requestId) {
-  //     // const requestDetails = await fetchRequestDetails(requestId);
-  //     // setRequestDetails(requestDetails);
-  //     console.log("Reviewing for request ID:", requestId);
-  //   }
-  // }, [requestId]);
-
-  const handleRatingChange = (newRating) => {
-    setRating(newRating);
-  };
-
-  const handleTextChange = (e) => {
-    const text = e.target.value;
-    if (text.length <= MAX_TEXT_LENGTH) {
-      setReviewText(text);
+  // 데이터 로딩 로직
+  useEffect(() => {
+    if (!requestId) {
+      setError('잘못된 접근입니다.');
+      setLoading(false);
+      return;
     }
-  };
-
-  const handlePhotoUpload = (event) => {
-    // 여러 파일 업로드 처리 (간단한 예시, 최대 2개)
-    const files = Array.from(event.target.files);
-    if (photos.length + files.length > 2) {
-        alert("사진은 최대 2장까지 업로드할 수 있습니다.");
-        // files = files.slice(0, 2 - photos.length); // 잘라내거나 혹은 입력 자체를 막는 방법도 고려
+    const storedAuth = sessionStorage.getItem('identityVerifiedUser');
+    if (!storedAuth) {
+        alert('본인인증이 필요합니다.');
+        router.replace('/');
         return;
     }
+    const authData = JSON.parse(storedAuth);
 
-    // TODO: 실제 파일 업로드 로직 및 미리보기 구현
-    // 여기서는 파일 이름만 간단히 저장하거나, File 객체 자체를 저장합니다.
-    setPhotos(prevPhotos => [...prevPhotos, ...files.slice(0, 2 - prevPhotos.length)]);
-    console.log("Uploaded files:", files);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const reviewsRef = collection(db, 'reviews');
+        const q = query(reviewsRef, where("requestId", "==", requestId));
+        const reviewSnapshot = await getDocs(q);
+
+        if (!reviewSnapshot.empty) {
+          const reviewDoc = reviewSnapshot.docs[0];
+          const reviewData = reviewDoc.data();
+          setExistingReviewId(reviewDoc.id);
+          setRating(reviewData.rating || 0);
+          setReviewText(reviewData.content || '');
+          setPhotos(reviewData.imageUrls || []);
+          setRequestDetails(reviewData);
+        } else {
+          const requestRef = doc(db, 'requests', requestId);
+          const requestSnap = await getDoc(requestRef);
+          if (requestSnap.exists() && requestSnap.data().applicantName === authData.name) {
+            setRequestDetails(requestSnap.data());
+          } else {
+            throw new Error("리뷰를 작성할 신청 내역을 찾을 수 없거나 권한이 없습니다.");
+          }
+        }
+      } catch (err) {
+        console.error("Error loading data:", err);
+        setError("데이터를 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [requestId, router]);
+  
+  // photos 상태가 변경될 때마다 미리보기 URL을 생성/해제하는 useEffect
+  useEffect(() => {
+    const newPreviews = photos.map(photo => {
+      if (typeof photo === 'string') {
+        return photo; // 기존 URL은 그대로 사용
+      }
+      return URL.createObjectURL(photo); // File 객체는 blob URL 생성
+    });
+    setPhotoPreviews(newPreviews);
+
+    // 컴포넌트가 언마운트되거나 photos가 변경되기 전에 기존 blob URL 해제
+    return () => {
+      newPreviews.forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [photos]);
+
+  const handleRatingChange = (newRating) => setRating(newRating);
+  const handleTextChange = (e) => {
+    const text = e.target.value;
+    if (text.length <= MAX_TEXT_LENGTH) setReviewText(text);
+  };
+
+  // [수정] 특정 슬롯의 사진을 변경/추가하는 함수
+  const handlePhotoChange = (event, index) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const newPhotos = [...photos];
+    newPhotos[index] = file;
+    setPhotos(newPhotos.slice(0, 2));
+  };
+
+  // [추가] 특정 슬롯의 사진을 제거하는 함수
+  const handleRemovePhoto = (indexToRemove) => {
+    setPhotos(photos.filter((_, index) => index !== indexToRemove));
   };
 
   const handleSubmitReview = async () => {
-    if (rating === 0) {
-      alert("별점을 선택해주세요.");
+    if (rating === 0 || reviewText.trim() === '') {
+      alert("별점과 리뷰 내용을 모두 입력해주세요.");
       return;
     }
-    if (reviewText.trim() === '') {
-      alert("리뷰 내용을 입력해주세요.");
+    if (!requestDetails) {
+      alert("리뷰를 작성할 대상 정보가 없습니다. 페이지를 새로고침 해주세요.");
       return;
     }
+    setIsSubmitting(true);
+    setError('');
 
-    const reviewDataToSave = {
-      requestId, // 어떤 신청 건에 대한 리뷰인지 연결
-      rating,
-      text: reviewText,
-      // photos: 실제로는 업로드된 이미지 URL 배열 저장
-      imageUrls: photos.map((_, index) => `/images/sample/review-photo-${index + 1}.jpg`), // 임시 이미지 경로
-      createdAt: new Date().toISOString(),
-      // 여기에 추가적으로 user 정보 (authorId, authorName 등)도 저장해야 합니다.
-      // 예: authorId: auth.currentUser.uid (로그인 기능이 구현되어 있다고 가정)
-    };
+    try {
+      const uploadPromises = photos
+        .filter(p => p instanceof File)
+        .map(file => {
+          const storageRef = ref(storage, `reviews/${requestId}/${Date.now()}_${file.name}`);
+          return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+        });
+      const newImageUrls = await Promise.all(uploadPromises);
 
-    console.log("Submitting review:", reviewDataToSave);
-    // <<<< 실제 저장 로직 시작 >>>>
-    // 예시: Firestore에 저장하고 생성된 review 문서 ID를 받아옴
-    // const newReviewId = await saveReviewToFirestore(reviewDataToSave);
-    // <<<< 실제 저장 로직 끝 >>>>
+      const existingImageUrls = photos.filter(p => typeof p === 'string');
+      const finalImageUrls = [...existingImageUrls, ...newImageUrls];
 
-    // 저장 성공 후, 생성된 리뷰 ID를 가지고 상세 페이지로 이동
-    // 이 예시에서는 requestId를 리뷰의 ID처럼 사용하거나,
-    // 또는 별도의 reviewId를 생성했다고 가정하고 사용합니다.
-    // 지금은 requestId를 사용하여 해당 신청 건에 대한 리뷰를 본다고 가정하겠습니다.
-    // 만약 리뷰가 독립적인 ID를 갖는다면 그 ID를 사용해야 합니다.
-    // let's assume for now the review is uniquely identified by the requestId for display purposes,
-    // or that we've created a review and its ID is, for example, `newlyCreatedReviewId`.
-    const displayId = requestId; // 또는 새로 생성된 리뷰의 ID (newlyCreatedReviewId)
+      const reviewData = {
+        requestId,
+        rating,
+        content: reviewText,
+        imageUrls: finalImageUrls,
+        userName: requestDetails.applicantName || requestDetails.userName,
+        userPhone: requestDetails.applicantContact || requestDetails.userPhone,
+        serviceType: requestDetails.field || requestDetails.serviceType,
+        updatedAt: serverTimestamp(),
+      };
+      
+      if (existingReviewId) {
+        const reviewRef = doc(db, 'reviews', existingReviewId);
+        await updateDoc(reviewRef, reviewData);
+      } else {
+        await addDoc(collection(db, 'reviews'), {
+          ...reviewData,
+          createdAt: serverTimestamp(),
+        });
+      }
 
-    alert("후기가 성공적으로 저장되었습니다! (실제 저장 로직은 구현 필요)");
-    router.push(`/reviews/detail/${displayId}`); // 저장된 리뷰를 보여줄 상세 페이지로 이동
+      const requestRef = doc(db, 'requests', requestId);
+      await updateDoc(requestRef, { reviewWritten: true });
+
+      alert("후기가 성공적으로 저장되었습니다!");
+      router.push(`/requests`);
+
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      setError("후기 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+  
+  if (loading) return <div className={styles.pageContainer}><p>로딩 중...</p></div>;
+  if (error) return <div className={styles.pageContainer}><p>{error}</p></div>;
 
   return (
     <div className={styles.pageContainer}>
-      <Header2 title="후기작성" onBack={() => router.back()} /> {/* 이전 페이지로 이동 */}
-      
+      <Header2 title="후기작성" onBack={() => router.back()} />
       <main className={styles.formContainer}>
         <div className={styles.ratingSection}>
           <StarRating rating={rating} onRatingChange={handleRatingChange} />
         </div>
-
         <div className={styles.photoUploadSection}>
-          {/* 이미지에 있는 두 개의 '+' 박스를 표현 */}
           {[0, 1].map((index) => (
-            <label key={index} className={styles.photoUploadBox}>
-              {photos[index] ? (
-                <img 
-                    src={URL.createObjectURL(photos[index])} 
-                    alt={`preview ${index + 1}`} 
-                    className={styles.photoPreview} 
-                    onLoad={() => URL.revokeObjectURL(photos[index])} // 메모리 누수 방지
+            <div key={index} className={styles.photoUploadBoxContainer}>
+              <label className={styles.photoUploadBox}>
+                {photoPreviews[index] ? (
+                  <>
+                    <Image src={photoPreviews[index]} alt={`preview ${index + 1}`} layout="fill" objectFit="cover" className={styles.photoPreview} />
+                    {/* [수정] 삭제 버튼 추가 */}
+                    <button 
+                      type="button" 
+                      className={styles.removePhotoButton} 
+                      onClick={(e) => {
+                        e.preventDefault(); 
+                        handleRemovePhoto(index);
+                      }}
+                    >
+                      &times;
+                    </button>
+                  </>
+                ) : <span>+</span>}
+                {/* [수정] 각 input이 고유의 index를 가지도록 onChange 핸들러 수정 */}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => handlePhotoChange(e, index)} 
+                  style={{ display: 'none' }} 
                 />
-              ) : (
-                <span>+</span>
-              )}
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handlePhotoUpload} 
-                style={{ display: 'none' }} 
-                // multiple // 여러 파일 선택을 허용하려면
-              />
-            </label>
+              </label>
+            </div>
           ))}
         </div>
-
         <div className={styles.textReviewSection}>
           <textarea
             className={styles.textArea}
@@ -238,20 +305,16 @@ export default function WriteReviewPage() {
             placeholder="솔직한 리뷰를 입력해주세요."
             rows="8"
           />
-          <div className={styles.charCount}>
-            {reviewText.length} / {MAX_TEXT_LENGTH}
-          </div>
+          <div className={styles.charCount}>{reviewText.length} / {MAX_TEXT_LENGTH}</div>
         </div>
-
         <div className={styles.guidelines}>
           <p>• 주문 상품과 무관한 사진 / 동영상을 올리면 삭제되거나 블라인드 처리될 수 있음</p>
           <p>• 사진이 포함된 리뷰가 더 효과적.</p>
         </div>
       </main>
-
       <footer className={styles.footer}>
-        <button className={styles.saveButton} onClick={handleSubmitReview}>
-          저장
+        <button className={styles.saveButton} onClick={handleSubmitReview} disabled={isSubmitting}>
+          {isSubmitting ? '저장 중...' : '저장'}
         </button>
       </footer>
     </div>

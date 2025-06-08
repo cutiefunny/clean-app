@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
-import { collection, getDocs, query, where, Timestamp, orderBy } from 'firebase/firestore'; // 필요한 Firestore 모듈 임포트
+import { collection, getDocs, query, where, Timestamp, orderBy, limit } from 'firebase/firestore'; // limit 추가
 
 import ImageSlider from '@/components/ImageSlider';
 import CustomizableCard from '@/components/CustomizableCard';
@@ -20,6 +20,7 @@ export default function Home() {
   // 1. Firestore에서 가져올 데이터에 대한 상태 변수 선언
   const [sliderImages, setSliderImages] = useState([]);
   const [eventImages, setEventImages] = useState([]);
+  const [reviews, setReviews] = useState([]); // 리뷰 데이터 상태 추가
   const [faqData, setFaqData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,7 @@ export default function Home() {
 
       try {
         // Promise.all을 사용하여 여러 데이터를 병렬로 가져옵니다.
-        const [introsSnapshot, adsSnapshot, faqSnapshot] = await Promise.all([
+        const [introsSnapshot, adsSnapshot, faqSnapshot, reviewsSnapshot] = await Promise.all([
           // 업체소개 (메인 슬라이더)
           getDocs(query(
             collection(db, "companyIntroductions"),
@@ -45,7 +46,9 @@ export default function Home() {
             where("startDate", "<=", now)
           )),
           // FAQ (고객 지원)
-          getDocs(query(collection(db, "companyNotices"), orderBy("createdAt", "asc")))
+          getDocs(query(collection(db, "companyNotices"), orderBy("createdAt", "desc"))),
+          // 리뷰 데이터: 최신순으로 5개만 가져오기
+          getDocs(query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(5)))
         ]);
 
         // 메인 슬라이더 데이터 처리
@@ -65,6 +68,23 @@ export default function Home() {
                 alt: doc.data().name || '이벤트 이미지',
             }));
         setEventImages(adImages);
+        
+        // 리뷰 데이터 처리
+        const fetchedReviews = reviewsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            // [수정] blob: URL을 필터링하여 유효한 URL만 전달합니다.
+            const validImages = (data.imageUrls || []).filter(url => typeof url === 'string' && url.startsWith('https'));
+            
+            return {
+                id: doc.id,
+                location: data.userName,
+                serviceType: data.serviceType,
+                rating: data.rating || 0,
+                text: data.content,
+                images: validImages // 유효한 이미지 URL 배열만 전달
+            }
+        });
+        setReviews(fetchedReviews);
 
         // FAQ 데이터 처리
         const faqs = faqSnapshot.docs.map(doc => ({
@@ -88,31 +108,12 @@ export default function Home() {
     router.push(`/apply-cleaning?serviceType=${encodeURIComponent(serviceTitle)}`);
   };
 
-  //#region 정적 데이터 (리뷰, 서비스 카드)
+  //#region 정적 데이터 (서비스 카드)
   const cardData = [
     { title: "신축 입주 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-3.png", imageAlt: "신축 입주 청소", backgroundColor: "#2D61E3" },
     { title: "이사 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-4.png", imageAlt: "이사 청소", backgroundColor: "#2DA3E3" },
     { title: "준공 리모델링 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-1.png", imageAlt: "준공 리모델링 청소", backgroundColor: "#65D69F" },
     { title: "상가&사무실 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-2.png", imageAlt: "상가&사무실 청소", backgroundColor: "#8957E1" },
-  ];
-
-  const sampleReviews = [
-    {
-      id: 1,
-      location: "홍길동",
-      serviceType: "오피스텔 9평",
-      rating: 4.9,
-      text: "정말 더러웠어요. 제가 청소할 엄두가 도저히 나지 않아 맡겼는데 진작 맡길껄 그랬어요. 깨끗해요",
-      images: [ "/images/sample/review1.jpg", "/images/sample/review2.jpg" ]
-    },
-    {
-      id: 2,
-      location: "김철수",
-      serviceType: "아파트 24평",
-      rating: 5.0,
-      text: "새 집처럼 만들어주셨어요! 특히 주방 기름때가 심했는데, 전문가의 손길은 다르네요. 감사합니다!",
-      images: [ "/images/sample/review3.jpg", "/images/sample/review4.jpg" ]
-    }
   ];
   //#endregion
 
@@ -148,7 +149,8 @@ export default function Home() {
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>리뷰</h2>
         </div>
-        <ReviewSlider reviews={sampleReviews}/>
+        {/* ReviewSlider에 동적 데이터 전달 */}
+        {loading ? <p>리뷰 로딩 중...</p> : <ReviewSlider reviews={reviews}/>}
       </div>
 
       <div style={{ width: '100%', paddingBottom: '1rem' }}>

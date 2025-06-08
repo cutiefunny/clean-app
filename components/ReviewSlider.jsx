@@ -41,7 +41,10 @@ const ReviewCard = ({ review }) => {
               width={200} // placeholder 이미지 비율에 맞춤, 실제 이미지 크기에 따라 조절
               height={200}
               className={styles.reviewImage}
-              onError={(e) => e.target.src = 'https://via.placeholder.com/300x200?text=Image+Error'} // 이미지 로드 실패 시 대체
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://placehold.co/600x400/EEE/31343C?text=Image+Error';
+              }}
             />
           </div>
         ))}
