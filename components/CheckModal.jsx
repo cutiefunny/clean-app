@@ -1,13 +1,13 @@
-// /components/CheckModal.js (Firebase 익명 로그인 추가)
+// /components/CheckModal.js (reCAPTCHA 적용)
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './CheckModal.module.css';
 import useSmsVerification from '@/hooks/useSmsVerification';
 
 // Firestore 및 Firebase Auth 모듈 임포트
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, RecaptchaVerifier } from "firebase/auth"; // RecaptchaVerifier 추가
 import { db } from '@/lib/firebase/clientApp';
 
 export default function CheckModal({ isOpen, onClose, onVerified }) {
@@ -18,8 +18,10 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
   const [componentError, setComponentError] = useState('');
 
   const { sendVerificationCode, loading, error: apiError } = useSmsVerification();
-  
   const [sentCodeFromServer, setSentCodeFromServer] = useState('');
+
+  // 1. reCAPTCHA를 렌더링할 컨테이너에 대한 ref 생성
+  const recaptchaContainerRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -33,8 +35,35 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     }
   }, [isOpen]);
 
+  // 2. 모달이 열릴 때 보이지 않는 reCAPTCHA를 설정하는 useEffect 추가
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const auth = getAuth();
+        // window 객체에 verifier를 할당하여 중복 생성을 방지합니다.
+        if (!window.recaptchaVerifier) {
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+            'size': 'invisible', // 보이지 않도록 설정
+            'callback': (response) => {
+              // reCAPTCHA 성공 시 콜백. 익명 로그인에서는 특별한 작업 불필요.
+              console.log("reCAPTCHA verified");
+            }
+          });
+        }
+        // reCAPTCHA 렌더링
+        window.recaptchaVerifier.render().catch(err => {
+            console.error("reCAPTCHA render error:", err);
+            setComponentError("인증 위젯을 로드하는 데 실패했습니다. 페이지를 새로고침 해주세요.");
+        });
+      } catch (err) {
+        console.error("Error setting up RecaptchaVerifier", err);
+        setComponentError("인증 설정에 실패했습니다. 새로고침 후 다시 시도해주세요.");
+      }
+    }
+  }, [isOpen]);
+
+
   const handleSendCode = async () => {
-    // 1. 입력 유효성 검사
     if (!name.trim() || !phoneNumber.trim()) {
       setComponentError('이름과 휴대폰 번호를 모두 입력해주세요.');
       return;
@@ -46,7 +75,6 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     setComponentError('');
 
     try {
-      // 2. Firestore `requests` 컬렉션 조회
       const requestsRef = collection(db, 'requests');
       const q = query(
         requestsRef,
@@ -59,9 +87,9 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
         alert('일치하는 요청 내역이 없습니다. 이름과 휴대폰 번호를 다시 확인해주세요.');
         return;
       }
-
-      // 4. SMS 발송 진행
+      
       const result = await sendVerificationCode(phoneNumber);
+      
       if (result && result.success) {
         alert('인증번호가 발송되었습니다.');
         setIsCodeSent(true);
@@ -74,8 +102,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     }
   };
 
-  // 인증번호 확인 및 다음 단계 진행 함수
-  const handleVerifyAndProceed = async () => { // async로 변경
+  const handleVerifyAndProceed = async () => {
     if (!verificationInput.trim()) {
       setComponentError('인증번호를 입력해주세요.');
       return;
@@ -86,11 +113,11 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
 
     if (isCodeCorrect) {
       try {
-        // --- [추가] Firebase 익명 로그인 실행 ---
         const auth = getAuth();
-        const userCredential = await signInAnonymously(auth);
+        // 3. signInAnonymously 호출 시, 생성된 verifier를 함께 전달
+        const verifier = window.recaptchaVerifier;
+        const userCredential = await signInAnonymously(auth, verifier);
         console.log("익명 로그인 성공:", userCredential.user.uid);
-        // ------------------------------------
 
         alert("본인인증에 성공했습니다.");
         
@@ -99,7 +126,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
           phoneNumber: phoneNumber,
           verifiedAt: new Date().toISOString(),
           isVerified: true,
-          uid: userCredential.user.uid // 익명 로그인 UID 저장
+          uid: userCredential.user.uid
         };
         sessionStorage.setItem('identityVerifiedUser', JSON.stringify(userAuthData));
 
@@ -110,6 +137,8 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
       } catch(authError) {
         console.error("Firebase 익명 로그인 실패:", authError);
         setComponentError("인증 세션을 생성하는 데 실패했습니다. 다시 시도해주세요.");
+        // 실패 시 reCAPTCHA 리셋 (선택 사항)
+        window.recaptchaVerifier.render().catch(err => console.error("reCAPTCHA re-render error:", err));
       }
     } else {
       setComponentError('인증번호가 올바르지 않습니다.');
@@ -123,6 +152,8 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        {/* 4. reCAPTCHA를 렌더링할 보이지 않는 컨테이너 추가 */}
+        <div ref={recaptchaContainerRef}></div>
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>본인인증</h2>
           <button onClick={onClose} className={styles.closeButton}>&times;</button>
