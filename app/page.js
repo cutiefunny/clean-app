@@ -145,9 +145,17 @@ export default function Home() {
         {loading ? <p>로딩 중...</p> : <ImageSlider images={eventImages} sliderHeight="150px" autoPlayDefault={true} />}
       </div>
 
-      <div style={{ width: '100%', marginTop: '2rem', paddingBottom: '1rem' }} onClick={() => window.location.href = '/reviews'}>
+      {/* [수정] 리뷰 섹션 */}
+      <div style={{ width: '100%', marginTop: '2rem', paddingBottom: '1rem' }}>
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>리뷰</h2>
+          {/* [추가] 전체보기 버튼 */}
+          <span 
+            onClick={() => router.push('/reviews')} 
+            className={styles.viewAllLink}
+          >
+            전체보기 ›
+          </span>
         </div>
         {/* ReviewSlider에 동적 데이터 전달 */}
         {loading ? <p>리뷰 로딩 중...</p> : <ReviewSlider reviews={reviews}/>}

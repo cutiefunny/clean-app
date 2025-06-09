@@ -1,20 +1,17 @@
-// components/ReviewSlider.js
+// /components/ReviewSlider.js (slidesPerView 수정)
 'use client';
 
-import React, { useState }
-from 'react';
-import Image from 'next/image'; // Next.js 이미지 최적화를 위해 사용
+import React from 'react';
+import Image from 'next/image';
 import styles from './ReviewSlider.module.css';
 
 // Swiper React 컴포넌트 및 모듈 import
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, A11y, Autoplay } from 'swiper/modules'; // 페이지네이션, 접근성, 자동재생 모듈
+import { Pagination, A11y, Autoplay } from 'swiper/modules';
 
 // Swiper 기본 스타일 및 페이지네이션 스타일 import
 import 'swiper/css';
 import 'swiper/css/pagination';
-// import 'swiper/css/autoplay'; // 자동 재생 사용 시
-
 
 // 개별 리뷰 카드 컴포넌트
 const ReviewCard = ({ review }) => {
@@ -27,8 +24,8 @@ const ReviewCard = ({ review }) => {
           <h3 className={styles.location}>{review.location}</h3>
           <span className={styles.serviceType}>{review.serviceType}</span>
           <span className={styles.rating}>
-          ⭐ {review.rating.toFixed(1)}
-            </span>
+            ⭐ {review.rating.toFixed(1)}
+          </span>
         </div>
       </div>
       <p className={styles.reviewText}>{review.text}</p>
@@ -38,7 +35,7 @@ const ReviewCard = ({ review }) => {
             <Image
               src={imgSrc}
               alt={`${review.location} 리뷰 이미지 ${index + 1}`}
-              width={200} // placeholder 이미지 비율에 맞춤, 실제 이미지 크기에 따라 조절
+              width={200}
               height={200}
               className={styles.reviewImage}
               onError={(e) => {
@@ -59,24 +56,25 @@ const ReviewSlider = ({ reviews }) => {
     return <p>표시할 리뷰가 없습니다.</p>;
   }
 
-return (
+  return (
     <div className={styles.sliderContainer}>
-        <Swiper
-        modules={[Pagination, A11y, Autoplay]}
-        slidesPerView={'auto'}
-        centeredSlides={false}
-        loop={reviews.length > 1} // 리뷰가 1개 초과일 때만 루프
+      <Swiper
+        modules={[A11y]} // Pagination, Autoplay는 제거하여 심플하게 구성
+        // [수정] 한 번에 1.5개의 슬라이드를 보여주도록 설정
+        slidesPerView={1.5}
+        // [수정] 슬라이드 간의 간격 설정
+        spaceBetween={15} 
+        loop={reviews.length > 2} // 루프는 슬라이드가 충분히 많을 때만 작동
         grabCursor={true}
-        spaceBetween={1} // <<--- 이 값을 조절하세요 (예: 10, 15, 20 등, 단위는 px)
-        >
+      >
         {reviews.map((review) => (
-            <SwiperSlide key={review.id} className={styles.swiperSlide}>
+          <SwiperSlide key={review.id} className={styles.swiperSlide}>
             <ReviewCard review={review} />
-            </SwiperSlide>
+          </SwiperSlide>
         ))}
-        </Swiper>
+      </Swiper>
     </div>
-    );
+  );
 };
 
 export default ReviewSlider;

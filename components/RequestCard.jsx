@@ -1,4 +1,4 @@
-// components/RequestCard.js
+// /components/RequestCard.js
 'use client';
 
 import Link from 'next/link';
@@ -14,18 +14,17 @@ export default function RequestCard({ request }) {
 
   // 버튼 클릭 시 실행될 함수
   const handleReviewAction = () => {
-    if (request.reviewwritten) {
-      // 리뷰가 이미 작성된 경우 -> 후기 상세 페이지로 이동
-      // request.id를 사용하여 해당 신청 건에 연결된 리뷰를 상세히 보여주는 페이지로 이동합니다.
-      // 이전 단계에서 후기 상세 페이지 URL을 /reviews/detail/[id]로 가정했습니다.
-      // 여기서 [id]는 request.id가 될 수도 있고, request 객체 내에 별도의 reviewId가 있다면 그것을 사용해야 합니다.
-      // 여기서는 request.id를 사용한다고 가정합니다.
+    // 이미 작성된 리뷰는 확인 페이지로, 미작성 시 작성 페이지로 이동
+    if (request.reviewWritten) {
       router.push(`/reviews/detail/${request.id}`);
     } else {
-      // 리뷰가 아직 작성되지 않은 경우 -> 후기 작성 페이지로 이동
       router.push(`/reviews/write/${request.id}`);
     }
   };
+
+  // [수정] 후기 작성/확인 버튼의 비활성화 여부를 결정하는 변수
+  // canWriteReview가 false이고, 아직 리뷰가 작성되지 않았을 때만 버튼을 비활성화합니다.
+  const isButtonDisabled = !request.canWriteReview && !request.reviewWritten;
 
   return (
     <div className={styles.card}>
@@ -38,7 +37,6 @@ export default function RequestCard({ request }) {
       </div>
 
       <div className={styles.infoGrid}>
-        {/* 이용일, 건물형태, 평수, 공간정보 표시 부분은 그대로 유지 */}
         <div className={styles.infoItem}>
           <span className={styles.infoLabel}>이용일</span>
           <span className={styles.infoValue}>{request.usageDate}</span>
@@ -58,10 +56,14 @@ export default function RequestCard({ request }) {
       </div>
 
       <button
-        className={`${styles.reviewButton} ${request.reviewwritten ? styles.reviewButtonReverse : ''}`}
-        onClick={handleReviewAction} // 수정된 핸들러 연결
+        className={`${styles.reviewButton} ${request.reviewWritten ? styles.reviewButtonReverse : ''}`}
+        onClick={handleReviewAction}
+        // [수정] disabled 속성 추가
+        disabled={isButtonDisabled}
+        // [추가] 비활성화 시 사용자에게 이유를 알려주는 title 속성
+        title={isButtonDisabled ? "이용일이 지나야 후기를 작성할 수 있습니다." : ""}
       >
-        {request.reviewwritten ? '후기 확인' : '후기 작성'}
+        {request.reviewWritten ? '후기 확인' : '후기 작성'}
       </button>
     </div>
   );

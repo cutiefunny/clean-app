@@ -1,58 +1,96 @@
-// app/reviews/page.js
+// /app/reviews/page.js (Firestore 연동)
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header2 from '@/components/Header2';
 import ReviewDisplayCard from '@/components/ReviewDisplayCard';
 import ImageLightbox from '@/components/ImageLightbox';
 import styles from './ReviewListPage.module.css';
-import { useRouter } from 'next/navigation';
 
-// 목업 데이터 (실제로는 API나 Firestore에서 가져옵니다)
-const mockReviewListData = [
-  { id: 'review1', requestId: 'req1', authorName: '홍길동', serviceType: '오피스텔', area: '9평', rating: 4.9, usageDate: '2023.03.25', text: '정말 더러웠어요. 제가 청소할 엄두가 도저히 나지 않아 맡겼는데 진작 맡길껄 그랬어요. 깨끗해요', imageUrls: ['/images/sample/review4.jpg', '/images/sample/review1.jpg', '/images/sample/review2.jpg', '/images/sample/review3.jpg', '/images/sample/review4.jpg', '/images/sample/review5.jpg'], createdAt: '2024-05-30T10:00:00Z' },
-  { id: 'review2', requestId: 'req2', authorName: '김영희', serviceType: '아파트', area: '32평', rating: 5.0, usageDate: '2023.04.10', text: '꼼꼼하게 잘해주셔서 새집처럼 변했어요! 감사합니다. 다음에도 꼭 이용할게요. 사진은 청소 전후 비교입니다.', imageUrls: ['/images/sample/review1.jpg', '/images/sample/review1.jpg'], createdAt: '2024-05-28T14:30:00Z' },
-  { id: 'review3', requestId: 'req3', authorName: '박철수', serviceType: '빌라', area: '20평', rating: 4.5, usageDate: '2023.05.01', text: '빠른 매칭과 친절한 상담원분 덕분에 좋았습니다. 청소 상태도 만족합니다. 사진 한 장 첨부해요!', imageUrls: ['/images/sample/review2.jpg'], createdAt: '2024-05-25T18:00:00Z' },
-];
-
+// Firestore 모듈 및 db 객체 임포트
+import { collection, getDocs, query, orderBy, where, documentId } from 'firebase/firestore';
+import { db } from '@/lib/firebase/clientApp';
 
 export default function ReviewListPage() {
   const router = useRouter();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState('latest');
+  const [sortOrder, setSortOrder] = useState('latest'); // 'latest' 또는 'oldest'
 
-  const [lightboxImage, setLightboxImage] = useState(null); // 라이트박스에 표시할 이미지 URL 상태
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
-    let sortedReviews = [...mockReviewListData];
-    if (sortOrder === 'latest') {
-      sortedReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    setReviews(sortedReviews);
-    setLoading(false);
-  }, [sortOrder]);
+    const fetchReviewsData = async () => {
+        setLoading(true);
+        try {
+            // 1. 리뷰 목록을 정렬 순서에 따라 가져옵니다.
+            const reviewsQuery = query(collection(db, 'reviews'), orderBy('createdAt', sortOrder === 'latest' ? 'desc' : 'asc'));
+            const reviewsSnapshot = await getDocs(reviewsQuery);
+            const reviewsData = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  const handleSortChange = (e) => {
-    alert(`정렬 기준 변경: ${sortOrder === 'latest' ? '오래된순 (임시)' : '최신순 (임시)'}`);
+            if (reviewsData.length === 0) {
+                setReviews([]);
+                setLoading(false);
+                return;
+            }
+
+            // 2. 리뷰에서 모든 고유한 requestId를 추출합니다.
+            const requestIds = [...new Set(reviewsData.map(r => r.requestId).filter(Boolean))];
+
+            let requestsMap = new Map();
+            // 3. requestId가 있는 경우, 해당하는 신청 내역 정보를 한 번에 가져옵니다.
+            if (requestIds.length > 0) {
+                // Firestore 'in' 쿼리는 최대 30개의 요소를 처리할 수 있습니다.
+                // 더 많은 요청을 처리해야 할 경우, 여러 번으로 나누어 요청해야 합니다.
+                const requestsQuery = query(collection(db, 'requests'), where(documentId(), 'in', requestIds));
+                const requestsSnapshot = await getDocs(requestsQuery);
+                requestsSnapshot.forEach(doc => {
+                    requestsMap.set(doc.id, doc.data());
+                });
+            }
+            
+            // 4. 리뷰 데이터와 신청 내역 데이터를 조합합니다.
+            const combinedData = reviewsData.map(review => {
+                const requestData = requestsMap.get(review.requestId) || {};
+                return {
+                    id: review.id,
+                    requestId: review.requestId,
+                    authorName: review.userName,
+                    serviceType: requestData.buildingType || '정보 없음',
+                    area: requestData.areaSize ? `${requestData.areaSize}평` : '정보 없음',
+                    rating: review.rating,
+                    usageDate: requestData.requestDate?.toDate().toLocaleDateString('ko-KR') || '정보 없음',
+                    text: review.content,
+                    imageUrls: review.imageUrls || [],
+                    createdAt: review.createdAt?.toDate().toISOString() || new Date().toISOString()
+                };
+            });
+            
+            setReviews(combinedData);
+
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            // 필요하다면 UI에 에러 상태를 표시할 수 있습니다.
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    fetchReviewsData();
+  }, [sortOrder]); // 정렬 순서가 변경될 때마다 데이터를 다시 가져옵니다.
+
+  const handleSortChange = () => {
     setSortOrder(prev => prev === 'latest' ? 'oldest' : 'latest');
   };
 
-  // 라이트박스 열기 함수
   const openLightbox = (imageUrl) => {
     setLightboxImage(imageUrl);
   };
 
-  // 라이트박스 닫기 함수
   const closeLightbox = () => {
     setLightboxImage(null);
   };
-
-  if (loading) {
-    // ... 로딩 UI ...
-    return <p>로딩 중...</p>;
-  }
-
 
   if (loading) {
     return (
@@ -79,13 +117,12 @@ export default function ReviewListPage() {
             <ReviewDisplayCard
               key={review.id}
               review={review}
-              onImageClick={openLightbox} // onImageClick prop 전달
+              onImageClick={openLightbox}
             />
           ))
         )}
       </main>
 
-      {/* 라이트박스 렌더링 */}
       {lightboxImage && (
         <ImageLightbox src={lightboxImage} onClose={closeLightbox} />
       )}

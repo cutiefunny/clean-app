@@ -1,10 +1,14 @@
 // app/apply-cleaning/ApplyCleaningForm.js
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'; // useCallback 추가
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './ApplyCleaning.module.css';
 import Header2 from '@/components/Header2';
+
+// Firestore 모듈 및 db 객체 임포트
+import { db } from '@/lib/firebase/clientApp';
+import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 import Step1Service from './Step1Service';
 import Step2Location from './Step2Location';
@@ -19,66 +23,57 @@ export default function ApplyCleaningForm() {
   const searchParams = useSearchParams();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 제출 로딩 상태 추가
   const [formData, setFormData] = useState({
     serviceType: '',
     desiredDate: '',
     desiredTime: '',
     addressFull: '',
     addressDetail: '',
-    buildingInfoType: '',
-    // Step4 필드들
-    supplyArea: '',         // 새로 추가
-    roomCount: 0,           // 기본값 0으로 변경 (이미지 UI 기준)
-    bathroomCount: 0,       // 기본값 0으로 변경
+    buildingType: '', 
+    siteConditions: {},
+    supplyArea: '',       
+    roomCount: 0,         
+    bathroomCount: 0,      
     verandaCount: 0,
-    spaceStructureType: '', // 새로 추가
-    userName: '',
-    userPhoneNumber: '',
-    // Step5 필드들
-    additionalRequest: '', // Step5 문의사항에 해당
-    userName: '',          // Step5 본인인증 이름
-    userPhoneNumber: '',   // Step5 본인인증 휴대폰번호
-    otpVerified: false,    // Step5 본인인증 완료 여부
+    spaceStructureType: '',
+    additionalRequest: '', 
+    userName: '',          
+    userPhoneNumber: '',   
+    otpVerified: false,    
   });
 
-   const didInitializeFromUrl = useRef(false);
+  const didInitializeFromUrl = useRef(false);
 
-   useEffect(() => {
-  const serviceTypeFromQuery = searchParams.get('serviceType');
+  useEffect(() => {
+    const serviceTypeFromQuery = searchParams.get('serviceType');
     if (serviceTypeFromQuery && !didInitializeFromUrl.current && (!formData.serviceType || formData.serviceType === '')) {
         setFormData(prevData => ({ ...prevData, serviceType: serviceTypeFromQuery }));
-        didInitializeFromUrl.current = true; // 초기화되었음을 표시
+        didInitializeFromUrl.current = true;
     }
-    }, [searchParams, formData.serviceType]);
+  }, [searchParams, formData.serviceType]);
 
 
   const updateFormData = useCallback((stepData) => {
     setFormData(prevFormData => ({ ...prevFormData, ...stepData }));
   }, []);
 
-  // 각 단계별 유효성 검사 함수
   const isStepValid = useCallback(() => {
+    // ... (유효성 검사 로직은 기존과 동일)
     switch (currentStep) {
-      case 1:
-        return !!formData.serviceType && !!formData.desiredDate && !!formData.desiredTime;
-      case 2:
-        return !!formData.addressFull; // 실제로는 더 상세한 검증 필요
-      case 3:
-        return !!formData.buildingType && Object.keys(formData.siteConditions || {}).length > 0; // siteConditions가 객체로 전달됨
-      case 4:
-        return !!formData.supplyArea &&
-               formData.roomCount >= 0 &&
-               formData.bathroomCount >= 0 &&
-               formData.verandaCount >= 0 &&
-               !!formData.spaceStructureType;
-      case 5:
-        return !!formData.userName &&
-               !!formData.userPhoneNumber &&
-               /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, '')) &&
-               !!formData.otpVerified; // otpVerified가 true여야 함
-      default:
-        return false;
-    }
+        case 1:
+          return !!formData.serviceType && !!formData.desiredDate && !!formData.desiredTime;
+        case 2:
+          return !!formData.addressFull;
+        case 3:
+          return !!formData.buildingType && Object.keys(formData.siteConditions || {}).length > 0;
+        case 4:
+          return !!formData.supplyArea && formData.roomCount >= 0 && formData.bathroomCount >= 0 && formData.verandaCount >= 0 && !!formData.spaceStructureType;
+        case 5:
+          return !!formData.userName && !!formData.userPhoneNumber && /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, '')) && !!formData.otpVerified;
+        default:
+          return false;
+      }
   }, [currentStep, formData]);
 
   const handleNextStep = () => {
@@ -89,7 +84,6 @@ export default function ApplyCleaningForm() {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(prev => prev + 1);
     }
-    // 마지막 단계의 "다음"은 handleSubmitApplication으로 처리됨
   };
 
   const handleHeaderBack = () => {
@@ -100,22 +94,49 @@ export default function ApplyCleaningForm() {
     }
   };
 
-//   const updateFormData = useCallback((stepData) => {
-//     setFormData(prevFormData => ({ ...prevFormData, ...stepData }));
-//   }, []);
-
-  const handleSubmitApplication = () => {
-    if (!isStepValid()) { // 최종 제출 전 유효성 검사
-      alert("이름과 휴대폰 번호를 정확히 입력해주세요. (또는 이전 단계 정보 누락)");
+  // [수정] Firestore에 데이터를 저장하는 함수
+  const handleSubmitApplication = async () => {
+    if (!isStepValid()) {
+      alert("본인인증을 포함하여 모든 필수 정보를 입력해주세요.");
       return;
     }
-    console.log("최종 신청 데이터:", formData);
-    alert("견적 비교 신청이 완료되었습니다! (실제 로직은 구현 필요)");
-    router.push('/');
+    setIsSubmitting(true);
+
+    try {
+        // Firestore 'requests' 컬렉션 스키마에 맞게 데이터 재구성
+        const dataToSave = {
+            field: formData.serviceType,
+            requestDate: Timestamp.fromDate(new Date(formData.desiredDate)),
+            requestTimeSlot: formData.desiredTime,
+            address: `${formData.addressFull} ${formData.addressDetail}`,
+            buildingType: formData.buildingType,
+            areaSize: formData.supplyArea,
+            spaceInfo: `방${formData.roomCount}, 화장실${formData.bathroomCount}, 베란다${formData.verandaCount}, ${formData.spaceStructureType}`,
+            siteConditions: formData.siteConditions, // 현장상태
+            applicantName: formData.userName,
+            applicantContact: formData.userPhoneNumber.replace(/-/g, ''),
+            inquiryNotes: formData.additionalRequest,
+            status: '전송대기', // 초기 상태
+            reviewWritten: false, // 리뷰 작성 여부 초기값
+            createdAt: serverTimestamp(), // 서버 시간 기준 생성일
+        };
+
+        // 'requests' 컬렉션에 문서 추가
+        const docRef = await addDoc(collection(db, 'requests'), dataToSave);
+        console.log("Document written with ID: ", docRef.id);
+
+        alert("견적 비교 신청이 성공적으로 완료되었습니다.");
+        router.push('/'); // 성공 후 홈으로 이동
+
+    } catch (error) {
+        console.error("Error adding document: ", error);
+        alert("신청 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const renderStepContent = () => {
-    // 이제 Step1-4는 onNext prop이 필요 없습니다.
     switch (currentStep) {
       case 1:
         return <Step1Service formData={formData} updateFormData={updateFormData} />;
@@ -126,8 +147,6 @@ export default function ApplyCleaningForm() {
       case 4:
         return <Step4Space formData={formData} updateFormData={updateFormData} />;
       case 5:
-        // Step5Confirm은 formData를 받아 표시하고, 이름/번호 입력 시 updateFormData를 호출합니다.
-        // 제출은 부모의 버튼이 담당합니다.
         return <Step5Confirm formData={formData} updateFormData={updateFormData} />;
       default:
         return <Step1Service formData={formData} updateFormData={updateFormData} />;
@@ -135,7 +154,7 @@ export default function ApplyCleaningForm() {
   };
 
   return (
-    <div className={styles.formContainerWithFixedFooter}> {/* 이 div가 flex column 역할 */}
+    <div className={styles.formContainerWithFixedFooter}>
       <Header2
         title="청소신청"
         onBack={handleHeaderBack}
@@ -154,9 +173,10 @@ export default function ApplyCleaningForm() {
         <button
           onClick={currentStep === TOTAL_STEPS ? handleSubmitApplication : handleNextStep}
           className={styles.footerButton}
-          disabled={!isStepValid()} // 유효성 검사에 따라 버튼 비활성화
+          // [수정] 제출 중일 때도 비활성화
+          disabled={!isStepValid() || isSubmitting} 
         >
-          {currentStep === TOTAL_STEPS ? '견적 비교 신청' : '다음'}
+          {isSubmitting ? '신청 중...' : (currentStep === TOTAL_STEPS ? '견적 비교 신청' : '다음')}
         </button>
       </div>
     </div>

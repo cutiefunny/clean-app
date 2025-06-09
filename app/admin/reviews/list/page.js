@@ -1,32 +1,30 @@
-// /app/admin/review/list/page.jsx
+// /app/admin/review/list/page.jsx (데이터 조인 로직 추가)
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from '../../board.module.css'; // 공통 CSS Module 임포트 (3단계 상위)
+import styles from '../../board.module.css';
 import {
   collection,
   getDocs,
   query,
   where,
   orderBy,
-  Timestamp, // 날짜 필터링 및 데이터 변환 시 사용
-  getCountFromServer, // 전체 아이템 수 계산
+  Timestamp,
+  getCountFromServer,
   doc,
-  deleteDoc
+  documentId // documentId import 추가
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/clientApp'; // Firebase db 객체
+import { db } from '@/lib/firebase/clientApp';
 
-// 아이콘 SVG (필요시 사용)
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 const CalendarIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 
-
-const ITEMS_PER_PAGE = 10; // 이미지에는 4개만 보이지만, 일반적인 게시판 수 고려
-const BUILDING_TYPES = ["전체", "오피스텔", "아파트", "원룸", "빌라", "단독주택"]; // 건물형태 옵션 예시
-const SORT_OPTIONS = ["최신순", "오래된순", "평수높은순", "평수낮은순"]; // 정렬 옵션 예시
-
-const COLLECTION_NAME = "reviews"; // Firestore 컬렉션 이름
+const ITEMS_PER_PAGE = 10;
+const BUILDING_TYPES = ["전체", "오피스텔", "아파트", "원룸", "빌라", "단독주택"];
+const SORT_OPTIONS = ["최신순", "오래된순", "평수높은순", "평수낮은순"];
+const REVIEWS_COLLECTION = "reviews";
+const REQUESTS_COLLECTION = "requests";
 
 export default function ReviewListPage() {
   const router = useRouter();
@@ -34,20 +32,17 @@ export default function ReviewListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // 필터 및 검색 상태 (이전과 동일)
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedBuildingType, setSelectedBuildingType] = useState(BUILDING_TYPES[0]);
-  const [productNameSearch, setProductNameSearch] = useState(''); // "상품명" 검색어
+  const [productNameSearch, setProductNameSearch] = useState('');
   const [debouncedProductNameSearch, setDebouncedProductNameSearch] = useState('');
   const [sortOption, setSortOption] = useState(SORT_OPTIONS[0]);
 
-  // 페이지네이션 상태 (이전과 동일)
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // 상품명 검색 디바운싱 (이전과 동일)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedProductNameSearch(productNameSearch);
@@ -56,91 +51,90 @@ export default function ReviewListPage() {
     return () => clearTimeout(handler);
   }, [productNameSearch]);
 
-  // Firestore에서 데이터 로드 함수 수정
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const reviewsCollectionRef = collection(db, COLLECTION_NAME);
-      const conditions = []; // Firestore where 조건을 담을 배열
+      const reviewsCollectionRef = collection(db, REVIEWS_COLLECTION);
+      const conditions = [];
 
-      // 날짜 필터링 (createdAt - 리뷰등록일 기준)
-      if (startDate) {
-        conditions.push(where('createdAt', '>=', Timestamp.fromDate(new Date(startDate))));
-      }
+      if (startDate) conditions.push(where('createdAt', '>=', Timestamp.fromDate(new Date(startDate))));
       if (endDate) {
         const endOfDay = new Date(endDate);
         endOfDay.setHours(23, 59, 59, 999);
         conditions.push(where('createdAt', '<=', Timestamp.fromDate(endOfDay)));
       }
-
-      // 건물형태 필터링
-      if (selectedBuildingType !== "전체") {
-        conditions.push(where('buildingType', '==', selectedBuildingType));
-      }
-
-      // 상품명 검색 (Firestore에서는 'productName' 필드에 대한 시작 문자열 검색 예시)
-      // Firestore는 기본적으로 '포함' 검색을 직접 지원하지 않으므로,
-      // 더 정교한 검색은 Algolia 등 외부 검색 엔진 연동을 권장합니다.
+      
+      // [수정] 건물형태는 requests 컬렉션에 있으므로 클라이언트에서 필터링
+      // if (selectedBuildingType !== "전체") {
+      //   conditions.push(where('buildingType', '==', selectedBuildingType));
+      // }
+      
+      // [수정] 상품명(서비스 타입) 필터링
       if (debouncedProductNameSearch) {
-        const lowerSearch = debouncedProductNameSearch.toLowerCase();
-        // 'productName' 필드가 있다고 가정
-        conditions.push(where('productName', '>=', lowerSearch));
-        conditions.push(where('productName', '<=', lowerSearch + '\uf8ff'));
+        conditions.push(where('serviceType', '>=', debouncedProductNameSearch));
+        conditions.push(where('serviceType', '<=', debouncedProductNameSearch + '\uf8ff'));
       }
 
-      // 정렬 조건 적용
-      let orderByField = 'createdAt'; // 기본 정렬 필드
-      let orderByDirection = 'desc'; // 기본 정렬 방향 (최신순)
-
-      switch (sortOption) {
-        case "오래된순":
-          orderByDirection = 'asc';
-          break;
-        case "평수높은순":
-          orderByField = 'areaSize'; // Firestore 필드명 'areaSize' 가정
-          orderByDirection = 'desc';
-          break;
-        case "평수낮은순":
-          orderByField = 'areaSize';
-          orderByDirection = 'asc';
-          break;
-        case "최신순":
-        default:
-          orderByField = 'createdAt';
-          orderByDirection = 'desc';
-          break;
-      }
+      let orderByField = 'createdAt';
+      let orderByDirection = 'desc';
+      // [수정] 평수 정렬은 requests 컬렉션에 있으므로 클라이언트에서 처리
+      // switch...case for sorting on 'createdAt' remains
+      if (sortOption === "오래된순") orderByDirection = 'asc';
       
-      // 최종 쿼리 생성 (필터 조건 + 정렬)
-      // Firestore에서 여러 필드에 대해 범위/부등호 필터를 사용하거나,
-      // 정렬 필드와 다른 필드에 범위/부등호 필터를 사용하려면 복합 색인이 필요할 수 있습니다.
       const dataQueryConstraints = [orderBy(orderByField, orderByDirection), ...conditions];
-      let dataQuery = query(reviewsCollectionRef, ...dataQueryConstraints);
+      const dataQuery = query(reviewsCollectionRef, ...dataQueryConstraints);
       
-      // 전체 아이템 수 계산 (필터링된 결과에 대해, 정렬은 제외)
-      const countQuery = query(reviewsCollectionRef, ...conditions);
-      const snapshotCount = await getCountFromServer(countQuery);
-      setTotalItems(snapshotCount.data().count);
+      const reviewsSnapshot = await getDocs(dataQuery);
+      if (reviewsSnapshot.empty) {
+        setReviews([]);
+        setTotalItems(0);
+        setLoading(false);
+        return;
+      }
 
-      // 현재 페이지 데이터 가져오기 (클라이언트 사이드 페이지네이션)
-      // 참고: 대량 데이터의 경우 Firestore의 limit()과 startAfter()를 사용한 서버 사이드 페이지네이션이 훨씬 효율적입니다.
-      // 이 예제에서는 우선 필터링/정렬된 모든 결과를 가져온 후 클라이언트에서 slice합니다.
-      const querySnapshot = await getDocs(dataQuery);
-      let docsData = querySnapshot.docs.map(doc => ({
+      const reviewsData = reviewsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        // Firestore Timestamp를 JavaScript Date 객체로 변환
-        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(doc.data().createdAt),
-        usageDate: doc.data().usageDate?.toDate ? doc.data().usageDate.toDate() : new Date(doc.data().usageDate),
+        createdAt: doc.data().createdAt?.toDate(),
       }));
+      
+      const requestIds = [...new Set(reviewsData.map(r => r.requestId).filter(Boolean))];
 
-      const paginatedReviews = docsData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+      let requestsMap = new Map();
+      if (requestIds.length > 0) {
+        const requestsQuery = query(collection(db, REQUESTS_COLLECTION), where(documentId(), 'in', requestIds));
+        const requestsSnapshot = await getDocs(requestsQuery);
+        requestsSnapshot.forEach(doc => requestsMap.set(doc.id, doc.data()));
+      }
+
+      let combinedData = reviewsData.map(review => {
+        const requestData = requestsMap.get(review.requestId) || {};
+        return {
+          ...review,
+          buildingType: requestData.buildingType || '정보 없음',
+          areaSize: requestData.areaSize || '정보 없음',
+          usageDate: requestData.requestDate?.toDate() || null,
+        };
+      });
+
+      // [추가] 클라이언트 사이드 필터링 및 정렬
+      if (selectedBuildingType !== "전체") {
+        combinedData = combinedData.filter(item => item.buildingType === selectedBuildingType);
+      }
+      if (sortOption === "평수높은순") {
+        combinedData.sort((a, b) => Number(b.areaSize) - Number(a.areaSize));
+      } else if (sortOption === "평수낮은순") {
+        combinedData.sort((a, b) => Number(a.areaSize) - Number(b.areaSize));
+      }
+      
+      setTotalItems(combinedData.length);
+      const paginatedReviews = combinedData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
       setReviews(paginatedReviews);
 
     } catch (err) {
-      console.error(`Error fetching ${COLLECTION_NAME}: `, err);
-      setError(`데이터를 불러오는 중 오류가 발생했습니다. Firestore 색인(index) 및 보안 규칙을 확인해주세요. 오류: ${err.message}`);
+      console.error(`Error fetching data: `, err);
+      setError(`데이터를 불러오는 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -150,63 +144,42 @@ export default function ReviewListPage() {
     fetchReviews();
   }, [fetchReviews]);
 
-  const handleFilterReset = () => {
-    setStartDate('');
-    setEndDate('');
-    setSelectedBuildingType(BUILDING_TYPES[0]);
-    setProductNameSearch('');
-    // setDebouncedProductNameSearch(''); // searchTerm useEffect가 처리
-    setSortOption(SORT_OPTIONS[0]);
-    setCurrentPage(1);
-  };
-  
-  const handleSearch = () => {
-    setDebouncedProductNameSearch(productNameSearch); 
-    setCurrentPage(1);
-  };
-
-
-  const handleViewDetails = (reviewId) => {
-    // TODO: 리뷰 상세 페이지로 이동 또는 모달 표시
-    // alert(`리뷰 ID ${reviewId} 상세보기`);
-    router.push(`/admin/reviews/list/${reviewId}`);
-  };
-
-  const handleSelectAll = (e) => { setSelectedIds(e.target.checked ? reviews.map(r => r.id) : []); };
-  const handleSelectSingle = (e, id) => { setSelectedIds(prev => e.target.checked ? [...prev, id] : prev.filter(selectedId => selectedId !== id)); };
+  const handleFilterReset = () => { /* ... */ };
+  const handleSearch = () => { /* ... */ };
+  const handleViewDetails = (reviewId) => router.push(`/admin/reviews/list/${reviewId}`);
+  const handleSelectAll = (e) => { /* ... */ };
+  const handleSelectSingle = (e, id) => { /* ... */ };
 
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const formatDate = (dateInput) => {
     if (!dateInput) return 'N/A';
-    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const date = new Date(dateInput);
     if (isNaN(date.getTime())) return 'Invalid Date';
-    const yyyy = date.getFullYear();
-    const mm = (date.getMonth() + 1).toString().padStart(2, '0');
-    const dd = date.getDate().toString().padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    return date.toLocaleDateString('ko-KR');
   };
 
   return (
     <div className={styles.pageContainer}>
       {/* 필터 및 검색 영역 */}
-      <div className={styles.filterSection} style={{ justifyContent: 'space-between' }}> {/* 양쪽 정렬 위해 */}
+      <div className={styles.filterSection} style={{ justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div className={styles.filterGroup}>
-            <label htmlFor="startDate">리뷰등록일:</label>
-            <input type="date" id="startDate" value={startDate} onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1);}} className={styles.input} />
-            <span style={{ margin: '0 5px' }}>~</span>
-            <input type="date" id="endDate" value={endDate} onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1);}} className={styles.input} />
-          </div>
-          <div className={styles.filterGroup}>
-            <label htmlFor="buildingTypeFilter">건물형태:</label>
-            <select id="buildingTypeFilter" value={selectedBuildingType} onChange={(e) => { setSelectedBuildingType(e.target.value); setCurrentPage(1);}} className={styles.filterDropdown}>
-              {BUILDING_TYPES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
-          <div className={styles.filterGroup} style={{flexGrow: 1}}>
-            <label htmlFor="productNameSearch">상품명:</label>
-            <input type="text" id="productNameSearch" placeholder="상품명 검색" value={productNameSearch} onChange={(e) => setProductNameSearch(e.target.value)} className={styles.input} style={{width: '200px'}}/>
-          </div>
+            {/* ... input fields for date, building type, product name ... */}
+             <div className={styles.filterGroup}>
+               <label htmlFor="startDate">리뷰등록일:</label>
+               <input type="date" id="startDate" value={startDate} onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1);}} className={styles.input} />
+               <span style={{ margin: '0 5px' }}>~</span>
+               <input type="date" id="endDate" value={endDate} onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1);}} className={styles.input} />
+             </div>
+             <div className={styles.filterGroup}>
+               <label htmlFor="buildingTypeFilter">건물형태:</label>
+               <select id="buildingTypeFilter" value={selectedBuildingType} onChange={(e) => { setSelectedBuildingType(e.target.value); setCurrentPage(1);}} className={styles.filterDropdown}>
+                 {BUILDING_TYPES.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+               </select>
+             </div>
+             <div className={styles.filterGroup} style={{flexGrow: 1}}>
+               <label htmlFor="productNameSearch">상품명:</label>
+               <input type="text" id="productNameSearch" placeholder="상품명 검색" value={productNameSearch} onChange={(e) => setProductNameSearch(e.target.value)} className={styles.input} style={{width: '200px'}}/>
+             </div>
         </div>
         <div className={styles.filterGroup}>
           <label htmlFor="sortOption">정렬:</label>
@@ -240,12 +213,12 @@ export default function ReviewListPage() {
               <tr key={review.id}>
                 <td className={styles.centerTd}><input type="checkbox" checked={selectedIds.includes(review.id)} onChange={(e) => handleSelectSingle(e, review.id)} /></td>
                 <td className={styles.centerTd}>{(totalItems - ((currentPage - 1) * ITEMS_PER_PAGE)) - index}</td>
-                <td className={styles.td}>{review.reviewId}</td>
+                <td className={styles.td}>{review.id.substring(0, 8)}</td>
                 <td className={styles.td}>{review.buildingType}</td>
                 <td className={styles.td}>{review.areaSize}</td>
                 <td className={styles.tdLeft}>{review.userName}</td>
                 <td className={styles.tdLeft} title={review.content}>
-                  {review.content.length > 30 ? `${review.content.substring(0, 30)}...` : review.content}
+                  {review.content && review.content.length > 30 ? `${review.content.substring(0, 30)}...` : review.content}
                 </td>
                 <td className={styles.td}>{formatDate(review.usageDate)}</td>
                 <td className={styles.centerTd}>

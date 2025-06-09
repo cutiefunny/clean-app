@@ -5,3 +5,14 @@
   line-height: 100%;
   letter-spacing: 0%;
 }
+
+.viewAllLink {
+  font-size: 0.8rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.viewAllLink:hover {
+  color: #333;
+}

@@ -8,7 +8,7 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
   const [serviceType, setServiceType] = useState('');
   const [desiredDate, setDesiredDate] = useState('');
   const [desiredTime, setDesiredTime] = useState('');
-  const dateInputRef = useRef(null); // 날짜 입력 필드에 대한 ref 생성
+  const dateInputRef = useRef(null);
 
   // useEffect는 formData prop (특히 serviceType)이 외부에서 변경될 때만 로컬 상태를 동기화합니다.
   useEffect(() => {
@@ -38,17 +38,10 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
     updateFormData({ desiredDate: value });
   };
 
-//   const handleTimeChange = (value) => { // 버튼 클릭 시 직접 값 전달받음
-//     setDesiredTime(value);
-//     updateFormData({ desiredTime: value });
-//   };
-
   // desiredTime 상태를 직접 업데이트하는 핸들러
   const handleDesiredTimeChange = (timeValue) => {
     setDesiredTime(timeValue);
     updateFormData({ desiredTime: timeValue });
-    // updateFormData는 useEffect를 통해 호출되거나, 여기서 직접 호출할 수도 있습니다.
-    // updateFormData({ desiredTime: timeValue }); // 즉시 반영을 원하면 여기서도 호출
   };
 
   // 커스텀 달력 아이콘 클릭 시 네이티브 날짜 선택기 표시
@@ -57,26 +50,18 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
       try {
         dateInputRef.current.showPicker();
       } catch (error) {
-        // showPicker()가 지원되지 않는 일부 브라우저(예: 구형 Firefox)에서는
-        // input에 focus()를 시도해볼 수 있으나, 항상 동작하지는 않습니다.
         console.warn("dateInputRef.current.showPicker() is not supported in this browser. Trying focus().", error);
         dateInputRef.current.focus();
       }
     }
   };
 
-  const handleNext = () => {
-    if (!serviceType || !desiredDate || !desiredTime) {
-      alert("모든 필수 항목을 선택해주세요.");
-      return;
-    }
-    // updateFormData는 이미 각 핸들러에서 호출되었으므로, formData는 최신 상태입니다.
-    onNext();
-  };
-
   const serviceOptions = [
     "신축 입주 청소", "이사 청소", "준공 리모델링 청소", "상가&사무실 청소", "기타 청소"
   ];
+  
+  // [추가] 오늘 날짜를 YYYY-MM-DD 형식으로 구하기
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className={styles.stepContainer}>
@@ -85,7 +70,7 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
         <select
           id="serviceType"
           className={`${styles.selectField} ${styles.step1Select}`}
-          value={serviceType} // 로컬 state 사용
+          value={serviceType}
           onChange={handleServiceTypeChange}
           required
         >
@@ -102,20 +87,20 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
           <input
             type="date"
             id="desiredDate"
-            className={`${styles.inputField} ${styles.step1Date}`} // 이 클래스에 기본 아이콘 숨김 스타일 적용
+            className={`${styles.inputField} ${styles.step1Date}`}
             value={desiredDate}
             onChange={handleDateChange}
             required
-            ref={dateInputRef} // ref 연결
+            ref={dateInputRef}
+            min={today} // [추가] 오늘 이전 날짜는 선택할 수 없도록 설정
           />
-          {/* 커스텀 아이콘에 onClick 핸들러 추가 */}
           <span
             className={styles.calendarIcon}
             onClick={handleCalendarIconClick}
-            role="button" // 접근성을 위해 역할 명시
+            role="button"
             aria-label="날짜 선택 달력 열기"
-            tabIndex={0} // 키보드 포커스 가능하도록 (선택 사항)
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCalendarIconClick(); }} // 키보드 접근성 (선택 사항)
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCalendarIconClick(); }}
           ></span>
         </div>
       </div>
@@ -126,27 +111,22 @@ export default function Step1Service({ formData, updateFormData, onNext }) {
           {['오전', '오후', '상담 후 협의'].map(time => (
             <label
               key={time}
-              // 선택된 상태에 따라 .radioLabelActive 클래스 추가
               className={`${styles.radioLabelAsButton} ${desiredTime === time ? styles.radioLabelActive : ''}`}
             >
               <input
                 type="radio"
-                name="desiredTime" // 그룹화를 위해 name 속성 유지
+                name="desiredTime"
                 value={time}
-                checked={desiredTime === time} // 실제 선택 상태는 input이 관리
-                onChange={() => handleDesiredTimeChange(time)} // label 클릭으로 input 상태 변경
+                checked={desiredTime === time}
+                onChange={() => handleDesiredTimeChange(time)}
                 required
-                className={styles.hiddenRadioInput} // 이 클래스로 실제 라디오 버튼 숨김
+                className={styles.hiddenRadioInput}
               />
               {time}
             </label>
           ))}
         </div>
       </div>
-      {/* 이 버튼은 ApplyCleaningForm의 하단 고정 버튼으로 대체됩니다. */}
-      {/* <div className={styles.stepButtonContainer}>
-        <button onClick={handleNext} className={styles.stepBottomButton}>다음</button>
-      </div> */}
     </div>
   );
 }
