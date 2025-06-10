@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from '../../board.module.css';
 import {
   collection,
@@ -28,6 +28,7 @@ const REQUESTS_COLLECTION = "requests";
 
 export default function ReviewListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,6 +75,27 @@ export default function ReviewListPage() {
       if (debouncedProductNameSearch) {
         conditions.push(where('serviceType', '>=', debouncedProductNameSearch));
         conditions.push(where('serviceType', '<=', debouncedProductNameSearch + '\uf8ff'));
+      }
+
+      // url 파라미터를 통한 필터링(date=YYYY-MM-DD)
+      const dateParam = searchParams.get('date');
+      if (dateParam) {
+        const date = new Date(dateParam);
+        if (!isNaN(date.getTime())) {
+          // 날짜가 유효한 경우, 해당 날짜의 시작과 끝을 기준으로 필터링
+          const startOfDay = new Date(date);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(date);
+          endOfDay.setHours(23, 59, 59, 999);
+          conditions.push(where('requestDate', '>=', Timestamp.fromDate(startOfDay)));
+          conditions.push(where('requestDate', '<=', Timestamp.fromDate(endOfDay)));
+
+          // startDate와 endDate도 업데이트
+          setStartDate(startOfDay.toISOString().split('T')[0]);
+          setEndDate(endOfDay.toISOString().split('T')[0]);
+        } else {
+          console.warn(`Invalid date parameter: ${dateParam}`);
+        }
       }
 
       let orderByField = 'createdAt';

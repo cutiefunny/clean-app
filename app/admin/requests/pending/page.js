@@ -2,14 +2,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import styles from '../../board.module.css'; // 공통 CSS Module 임포트 (4단계 상위)
-// Firestore 관련 import는 실제 연동 시 추가
+// [수정] useSearchParams 임포트 추가
+import { useRouter, useSearchParams } from 'next/navigation';
+import styles from '../../board.module.css';
 import { collection, getDocs, query, where, orderBy, Timestamp, getCountFromServer, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp';
-import ExcelJS from 'exceljs';        // exceljs 라이브러리 임포트
-import { saveAs } from 'file-saver'; // file-saver 라이브러리 임포트
-import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { useAuth } from '../../../context/AuthContext';
 
 // 아이콘 SVG (필요시 사용)
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -22,6 +22,7 @@ const COLLECTION_NAME = "requests"; // Firestore 컬렉션 이름
 
 export default function PendingRequestsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,6 +79,23 @@ export default function PendingRequestsPage() {
         conditions.push(where('applicantName', '>=', lowerSearchTerm));
         conditions.push(where('applicantName', '<=', lowerSearchTerm + '\uf8ff'));
         // 연락처 검색을 추가하려면 별도 쿼리나 다른 방식 필요
+      }
+
+      // url 파라미터를 통한 필터링(date=YYYY-MM-DD)
+      const dateParam = searchParams.get('date');
+      if (dateParam) {
+        const date = new Date(dateParam);
+        if (!isNaN(date.getTime())) {
+          // 날짜가 유효한 경우, 해당 날짜의 시작과 끝을 기준으로 필터링
+          const startOfDay = new Date(date);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(date);
+          endOfDay.setHours(23, 59, 59, 999);
+          conditions.push(where('requestDate', '>=', Timestamp.fromDate(startOfDay)));
+          conditions.push(where('requestDate', '<=', Timestamp.fromDate(endOfDay)));
+        } else {
+          console.warn(`Invalid date parameter: ${dateParam}`);
+        }
       }
 
       // 정렬 조건 (예: requestDate 또는 createdAt 최신순)
