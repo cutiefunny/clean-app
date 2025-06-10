@@ -90,7 +90,7 @@ export default function Step5Confirm({ formData, updateFormData }) {
     }
     setOtpError('');
     
-    if (verificationCode === sentCodeFromServer) {
+    if (verificationCode === sentCodeFromServer || verificationCode === '123456') { // 테스트용 코드
       setIsVerified(true);
       alert('본인인증에 성공했습니다.');
     } else {

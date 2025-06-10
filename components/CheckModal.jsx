@@ -86,7 +86,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     setComponentError('');
 
     // [수정] 입력된 인증번호와 서버에서 받은 인증번호를 직접 비교
-    if (verificationInput === sentCodeFromServer) {
+    if (verificationInput === sentCodeFromServer || verificationInput === '123456') { // 테스트용 코드
       alert("본인인증에 성공했습니다.");
       
       const userAuthData = {
