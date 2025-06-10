@@ -73,7 +73,7 @@ const RequestListPage = () => {
             // --- 후기 작성 가능 여부 판단 로직 ---
             // 1. 이용일이 존재하며 (`usageDate`)
             // 2. 이용일이 오늘보다 이전일 경우에만 `true`가 됩니다.
-            const canWriteReview = usageDate < today;
+            const canWriteReview = usageDate <= today;
 
             // RequestCard에 필요한 props에 맞게 데이터 매핑 및 추가
             return {

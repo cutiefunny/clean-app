@@ -1,11 +1,13 @@
 // layout.js
 
 import './globals.css';
+import DeviceDetector from '@/components/DeviceDetector';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <body>
+        <DeviceDetector />
         <main>
           {children}
         </main>

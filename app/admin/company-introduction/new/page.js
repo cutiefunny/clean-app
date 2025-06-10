@@ -50,13 +50,23 @@ export default function NewIntroductionPage() {
       const snapshot = await uploadBytes(imageRef, imageFile);
       const imageUrl = await getDownloadURL(snapshot.ref);
 
-      await addDoc(collection(db, COLLECTION_NAME), {
-        ...formData,
-        imageUrl,
-        startDate: Timestamp.fromDate(new Date(formData.startDate)),
-        endDate: Timestamp.fromDate(new Date(formData.endDate)),
-        createdAt: serverTimestamp(),
-      });
+    const endDate = new Date(formData.endDate);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log("Saving introduction with data:", {
+      ...formData,
+      imageUrl,
+      startDate: Timestamp.fromDate(new Date(formData.startDate)),
+      endDate: Timestamp.fromDate(endDate),
+    });
+
+    await addDoc(collection(db, COLLECTION_NAME), {
+      ...formData,
+      imageUrl,
+      startDate: Timestamp.fromDate(new Date(formData.startDate)),
+      endDate: Timestamp.fromDate(endDate),
+      createdAt: serverTimestamp(),
+    });
 
       alert("새로운 소개 항목이 등록되었습니다.");
       router.push('/admin/company-introduction');

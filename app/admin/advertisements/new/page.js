@@ -55,12 +55,16 @@ export default function NewAdvertisementPage() {
       const snapshot = await uploadBytes(imageRef, imageFile);
       const imageUrl = await getDownloadURL(snapshot.ref);
 
+      // [수정] endDate의 시간을 23:59:59로 설정
+      const endDate = new Date(formData.endDate);
+      endDate.setHours(23, 59, 59, 999);
+
       // 2. Firestore에 데이터 저장
       await addDoc(collection(db, COLLECTION_NAME), {
         ...formData,
         imageUrl,
         startDate: Timestamp.fromDate(new Date(formData.startDate)),
-        endDate: Timestamp.fromDate(new Date(formData.endDate)),
+        endDate: Timestamp.fromDate(endDate),
         createdAt: serverTimestamp(),
       });
 

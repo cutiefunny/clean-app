@@ -82,12 +82,12 @@ export default function EditIntroductionPage() {
       }
 
       const docRef = doc(db, COLLECTION_NAME, introId);
-      await updateDoc(docRef, {
-        ...formData,
-        imageUrl,
-        startDate: Timestamp.fromDate(new Date(formData.startDate)),
-        endDate: Timestamp.fromDate(new Date(formData.endDate)),
-      });
+    await updateDoc(docRef, {
+      ...formData,
+      imageUrl,
+      startDate: Timestamp.fromDate(new Date(formData.startDate)),
+      endDate: Timestamp.fromDate(new Date(`${formData.endDate}T23:59:59`)),
+    });
 
       alert("정보가 성공적으로 수정되었습니다.");
       router.push('/admin/company-introduction');

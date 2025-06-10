@@ -93,7 +93,7 @@ export default function EditAdvertisementPage() {
         ...formData,
         imageUrl,
         startDate: Timestamp.fromDate(new Date(formData.startDate)),
-        endDate: Timestamp.fromDate(new Date(formData.endDate)),
+        endDate: Timestamp.fromDate(new Date(`${formData.endDate}T23:59:59`)),
       });
 
       alert("광고 정보가 성공적으로 수정되었습니다.");
