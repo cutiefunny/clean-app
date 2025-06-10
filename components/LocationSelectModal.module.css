@@ -1,50 +1,44 @@
 /* components/LocationSelectModal.module.css */
+
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6); /* 반투명 배경 */
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  justify-content: center; /* 모달 수평 중앙 정렬 */
-  align-items: center;    /* 모달 수직 중앙 정렬 */
+  justify-content: center;
+  align-items: center;
   z-index: 1050;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  padding: 0; /* 오버레이 자체 패딩 제거, 모달 크기로 제어 */
 }
 
 .modalContent {
   background-color: #ffffff;
-  width: 95vw; /* 뷰포트 너비의 95% */
-  height: 95vh; /* 뷰포트 높이의 95% */
-  /* 데스크탑 등 매우 큰 화면에서 최대 크기 제한 (선택 사항) */
-  /* max-width: 700px; */
-  /* max-height: 900px; */
-  border-radius: 16px; /* 모든 모서리를 둥글게 */
+  width: 95vw;
+  height: 85vh;
+  max-width: 600px;
+  max-height: 800px;
+  border-radius: 16px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.2);
   display: flex;
-  flex-direction: column; /* 내부 요소(헤더, 선택영역, 푸터)를 수직으로 배치 */
-  overflow: hidden; /* 내부 스크롤은 .selectionArea에서 담당 */
-  max-width: 600px; /* 최대 너비 설정 */
-  
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px; /* 헤더 내부 패딩 */
-  border-bottom: 1px solid #ffffff;
-  flex-shrink: 0; /* 헤더 크기가 줄어들지 않도록 고정 */
+  padding: 16px 20px;
+  flex-shrink: 0;
 }
 
 .modalTitle {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
-  margin: 0;
 }
 
 .closeButton {
@@ -53,39 +47,38 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: #888;
-  padding: 0;
-  line-height: 1;
-}
-.closeButton:hover {
-  color: #333;
 }
 
 .selectedPathDisplay {
-  padding: 0px 20px 12px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #2DA3E3;
-  border-bottom: 1px solid #e0e0e0;
-  min-height: 24px; /* 내용 없을 때 최소 높이 유지 */
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #007bff;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+  min-height: 24px;
   background-color: #fff;
-  flex-shrink: 0; /* 크기 고정 */
-  text-align: left; /* 텍스트 왼쪽 정렬 */
+  flex-shrink: 0;
 }
 
+.errorText { color: #dc3545; padding: 10px 20px; font-size: 0.85rem; }
+.guideText { padding: 20px; text-align: center; color: #6c757d; font-size: 0.9rem; }
+
+/* --- 2단 컬럼 영역 --- */
 .selectionArea {
-  display: flex; /* 시/도 목록과 시/군/구 목록을 가로로 배치 */
-  flex-grow: 1; /* 헤더, 선택경로, 푸터를 제외한 모든 가용 공간 차지 */
-  overflow: hidden; /* 자식 요소들에서 개별 스크롤 처리 */
-  background-color: #fff;
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+  background-color: #f8f9fa; /* 전체 배경색 */
 }
 
+/* 왼쪽 시/도 컬럼 */
 .siDoList {
-  width: 120px; /* 시/도 목록 너비 고정 (또는 flex-basis, % 사용 가능) */
-  /* 또는 flex-basis: 30%; */
-  background-color: #f0f2f5; /* 왼쪽 시/도 목록 배경 */
-  overflow-y: auto; /* 내용 많을 시 스크롤 */
-  /* border-right: 1px solid #f0f2f5; */
-  flex-shrink: 0; /* 너비 고정 */
+  width: 120px;
+  background-color: #f8f9fa;
+  overflow-y: auto;
+  border-right: 1px solid #dee2e6;
+  flex-shrink: 0;
 }
 
 .siDoItem {
@@ -98,52 +91,101 @@
   font-size: 0.9rem;
   color: #495057;
   cursor: pointer;
-  border-bottom: 1px solid #f0f2f5;
 }
-.siDoItem:last-child {
+
+.siDoItem.active {
+  background-color: #ffffff; /* 활성화 시 배경색 흰색 */
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* 오른쪽 상세 지역 컬럼 */
+.detailsList {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.siGunGuGroup {
+  border-bottom: 1px solid #f1f3f5;
+}
+.siGunGuGroup:last-child {
   border-bottom: none;
 }
-.siDoItem.active {
-  background-color: #ffffff;
-  font-weight: 600;
-  color: black;
+
+.siGunGuHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 14px 10px;
+  background-color: #fff;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.siGunGuDongList {
-  flex-grow: 1; /* 남은 가로 공간 모두 차지 */
-  padding: 0px; /* 내부 그룹에서 패딩 관리 */
-  overflow-y: auto; /* 내용 많을 시 스크롤 */
-  background-color: #ffffff;
+.siGunGuHeader.expanded {
+  color: #007bff;
+  font-weight: bold;
 }
 
-/* .guideText, .siGunGuGroup, .siGunGuGroupHeader, .arrow, .dongGrid, .dongItem, .activeDong 등은 이전과 동일하게 유지 */
-/* ... (이전 답변의 해당 클래스 스타일 복사) ... */
-.guideText { padding: 20px; text-align: center; color: #6c757d; font-size: 0.9rem; }
-/* .siGunGuGroup { border-bottom: 1px solid #f0f0f0; } */
-.siGunGuGroup:last-child { border-bottom: none; }
-.siGunGuGroupHeader { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px 20px; background-color: #fff; border: none; text-align: left; font-size: 0.95rem; font-weight: 500; color: #343a40; cursor: pointer; transition: background-color 0.1s ease; }
-.siGunGuGroupHeader:hover { background-color: #f8f9fa; }
-.siGunGuGroupHeader.expanded { background-color: #2DA3E326; color: #000000; font-weight: 600; }
-.arrow { font-size: 0.8rem; }
-.dongGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; padding: 15px 20px; background-color: #ffffff; }
-.dongItem { padding: 10px; border: 1px solid #ced4da; border-radius: 20px; background-color: #ffffff; font-size: 0.85rem; color: #495057; cursor: pointer; text-align: center; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dongItem.activeDong { background-color: white; color: #2DA3E3; border-color: #2DA3E3; font-weight: 500; }
-.dongItem:hover:not(.activeDong) { border-color: #2DA3E3; color: #2DA3E3; }
+.arrow {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
 
+.siGunGuHeader.expanded .arrow {
+  transform: rotate(180deg);
+}
 
+.dongGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 10px 15px;
+  background-color: #f8f9fa; /* 동 목록 배경색 */
+  border-top: 1px solid #e9ecef;
+}
+
+.dongItem {
+  padding: 8px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dongItem.activeDong {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  font-weight: 500;
+}
+
+.dongItem:hover:not(.activeDong) {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+/* 푸터 및 확인 버튼 */
 .modalFooter {
-  width : 95%;
-  margin : 10px auto; /* 모달 너비에 맞춰 중앙 정렬 */
-  /* padding: 16px 20px; */
-  /* border-top: 1px solid #e0e0e0; */
-  background-color: transparent;
-  flex-shrink: 0; /* 푸터 크기가 줄어들지 않도록 고정 */
+  padding: 16px 20px;
+  border-top: 1px solid #e9ecef;
+  background-color: #fff;
+  flex-shrink: 0;
 }
 
 .confirmButton {
   width: 100%;
   padding: 12px;
-  background-color: #2DA3E3; /* 파란색 버튼 */
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 8px;
@@ -152,9 +194,7 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.confirmButton:hover:not(:disabled) {
-  background-color: #0056b3;
-}
+
 .confirmButton:disabled {
   background-color: #6c757d;
   opacity: 0.65;
