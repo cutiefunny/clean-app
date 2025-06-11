@@ -7,6 +7,9 @@ import Header2 from '@/components/Header2';
 import styles from './WriteReviewPage.module.css';
 import Image from 'next/image';
 
+import { ScrollMenu } from 'react-horizontal-scrolling-menu';
+import 'react-horizontal-scrolling-menu/dist/styles.css'; // 라이브러리 기본 CSS
+
 // Firestore 및 Storage 모듈 임포트
 import { db, storage } from '@/lib/firebase/clientApp';
 import { doc, getDoc, addDoc, updateDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -106,6 +109,9 @@ export default function WriteReviewPage() {
   const [error, setError] = useState('');
   
   const MAX_TEXT_LENGTH = 1000;
+  const MAX_PHOTOS = 5;
+
+  const fileInputRef = useRef(null);
 
   // 데이터 로딩 로직
   useEffect(() => {
@@ -182,6 +188,27 @@ export default function WriteReviewPage() {
     if (text.length <= MAX_TEXT_LENGTH) setReviewText(text);
   };
 
+  // [수정] 사진 추가 핸들러
+  const handlePhotoAdd = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    // 현재 사진 개수와 새로 추가될 사진 개수의 합이 최대치를 넘지 않도록 제한
+    const remainingSlots = MAX_PHOTOS - photos.length;
+    if (files.length > remainingSlots) {
+      alert(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다. ${remainingSlots}장 더 추가할 수 있습니다.`);
+    }
+    const filesToAdd = files.slice(0, remainingSlots);
+    setPhotos(prevPhotos => [...prevPhotos, ...filesToAdd]);
+
+    // input 값 초기화하여 동일한 파일 다시 선택 가능하게 함
+    event.target.value = '';
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   // [수정] 특정 슬롯의 사진을 변경/추가하는 함수
   const handlePhotoChange = (event, index) => {
     const file = event.target.files[0];
@@ -189,7 +216,7 @@ export default function WriteReviewPage() {
 
     const newPhotos = [...photos];
     newPhotos[index] = file;
-    setPhotos(newPhotos.slice(0, 2));
+    setPhotos(newPhotos.slice(0, 5)); // 최대 5개 사진으로 제한
   };
 
   // [추가] 특정 슬롯의 사진을 제거하는 함수
@@ -266,37 +293,48 @@ export default function WriteReviewPage() {
         <div className={styles.ratingSection}>
           <StarRating rating={rating} onRatingChange={handleRatingChange} />
         </div>
+        {/* ==================== [수정] 사진 업로드 섹션 ==================== */}
         <div className={styles.photoUploadSection}>
-          {[0, 1].map((index) => (
-            <div key={index} className={styles.photoUploadBoxContainer}>
-              <label className={styles.photoUploadBox}>
-                {photoPreviews[index] ? (
-                  <>
-                    <Image src={photoPreviews[index]} alt={`preview ${index + 1}`} layout="fill" objectFit="cover" className={styles.photoPreview} />
-                    {/* [수정] 삭제 버튼 추가 */}
-                    <button 
-                      type="button" 
-                      className={styles.removePhotoButton} 
-                      onClick={(e) => {
-                        e.preventDefault(); 
-                        handleRemovePhoto(index);
-                      }}
-                    >
-                      &times;
-                    </button>
-                  </>
-                ) : <span>+</span>}
-                {/* [수정] 각 input이 고유의 index를 가지도록 onChange 핸들러 수정 */}
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => handlePhotoChange(e, index)} 
-                  style={{ display: 'none' }} 
-                />
-              </label>
-            </div>
-          ))}
+          <ScrollMenu>
+            {/* 기존에 추가된 사진들을 렌더링 */}
+            {photoPreviews.map((previewUrl, index) => (
+              <div key={`photo-${index}`} className={styles.photoUploadBoxContainer}>
+                <div className={styles.photoUploadBox}>
+                  <Image src={previewUrl} alt={`preview ${index + 1}`} layout="fill" objectFit="cover" className={styles.photoPreview} />
+                  <button 
+                    type="button" 
+                    className={styles.removePhotoButton} 
+                    onClick={(e) => {
+                      e.preventDefault(); 
+                      handleRemovePhoto(index);
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            ))}
+            
+            {/* 사진 추가 버튼 (최대 개수에 도달하지 않았을 경우에만 보임) */}
+            {photos.length < MAX_PHOTOS && (
+              <div key="add-photo" className={styles.photoUploadBoxContainer}>
+                <button type="button" className={styles.photoUploadBox} onClick={triggerFileInput}>
+                  <span>+</span>
+                </button>
+              </div>
+            )}
+          </ScrollMenu>
+          {/* 실제 파일 업로드를 담당하는 숨겨진 input */}
+          <input 
+            ref={fileInputRef}
+            type="file" 
+            accept="image/*" 
+            multiple // 여러 파일 선택 가능하도록
+            onChange={handlePhotoAdd} 
+            style={{ display: 'none' }} 
+          />
         </div>
+        {/* ============================================================= */}
         <div className={styles.textReviewSection}>
           <textarea
             className={styles.textArea}

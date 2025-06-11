@@ -19,7 +19,13 @@ export default function ReviewListPage() {
   const [sortOrder, setSortOrder] = useState('latest'); // 'latest' 또는 'oldest'
 
   const [lightboxImage, setLightboxImage] = useState(null);
-
+  // [수정] 라이트박스 상태를 객체로 관리
+  const [lightboxState, setLightboxState] = useState({
+    isOpen: false,
+    imageUrls: [],
+    startIndex: 0,
+  });
+  
   useEffect(() => {
     const fetchReviewsData = async () => {
         setLoading(true);
@@ -84,12 +90,30 @@ export default function ReviewListPage() {
     setSortOrder(prev => prev === 'latest' ? 'oldest' : 'latest');
   };
 
-  const openLightbox = (imageUrl) => {
-    setLightboxImage(imageUrl);
+  const openLightbox = (imageUrls, clickedIndex) => {
+    // imageUrls 배열에서 유효한(비어있지 않은 문자열) URL만 필터링
+    const validImageUrls = imageUrls.filter(url => url && typeof url === 'string');
+
+    // 유효한 이미지가 하나도 없으면 라이트박스를 열지 않음
+    if (validImageUrls.length === 0) return;
+
+    // 클릭된 이미지가 필터링된 새 배열에서 몇 번째 인덱스인지 다시 계산
+    const originalUrl = imageUrls[clickedIndex];
+    const newIndex = validImageUrls.indexOf(originalUrl);
+
+    setLightboxState({
+      isOpen: true,
+      imageUrls: validImageUrls,
+      startIndex: newIndex >= 0 ? newIndex : 0, // 혹시 못찾으면 0번 인덱스
+    });
   };
 
   const closeLightbox = () => {
-    setLightboxImage(null);
+    setLightboxState({
+      isOpen: false,
+      imageUrls: [],
+      startIndex: 0,
+    });
   };
 
   if (loading) {
@@ -117,14 +141,21 @@ export default function ReviewListPage() {
             <ReviewDisplayCard
               key={review.id}
               review={review}
-              onImageClick={openLightbox}
+              // [수정] onImageClick이 호출될 때, 리뷰의 전체 이미지와 클릭된 이미지의 인덱스를 전달합니다.
+              // 이 로직이 작동하려면 ReviewDisplayCard 내부에서 이미지 클릭 시 index를 넘겨주도록 수정해야 합니다.
+              onImageClick={(clickedIndex) => openLightbox(review.imageUrls, clickedIndex)}
             />
           ))
         )}
       </main>
 
-      {lightboxImage && (
-        <ImageLightbox src={lightboxImage} onClose={closeLightbox} />
+      {/* [수정] 라이트박스 호출 부분 */}
+      {lightboxState.isOpen && (
+        <ImageLightbox
+          imageUrls={lightboxState.imageUrls}
+          startIndex={lightboxState.startIndex}
+          onClose={closeLightbox}
+        />
       )}
     </div>
   );

@@ -56,39 +56,65 @@
 
 /* 사진 업로드 */
 .photoUploadSection {
-  display: flex;
-  justify-content: center; /* 가운데 정렬 */
-  gap: 16px; /* 박스 사이 간격 */
-  margin-bottom: 24px;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  /* react-horizontal-scrolling-menu 라이브러리가 스크롤을 처리하므로
+     기존의 flex나 overflow 속성은 필요 없을 수 있습니다.
+     라이브러리 기본 스타일이 적용됩니다. */
+}
+
+.photoUploadBoxContainer {
+  width: 90px; /* 각 아이템의 너비 */
+  height: 90px; /* 각 아이템의 높이 */
+  margin-right: 10px; /* 아이템 간 간격 */
+  flex-shrink: 0; /* 아이템이 찌그러지지 않도록 */
 }
 
 .photoUploadBox {
-  width: 100px; /* 정사각형 모양 */
-  height: 100px;
-  border: 2px dashed #d0d0d0;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed #ccc;
   border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 32px; /* '+' 아이콘 크기 */
-  color: #b0b0b0;
   cursor: pointer;
-  background-color: #f9f9f9;
-  transition: background-color 0.2s;
-  overflow: hidden; /* 이미지가 넘치지 않도록 */
   position: relative;
+  background-color: #f8f9fa;
+  overflow: hidden; /* Image 컴포넌트가 둥근 모서리를 넘지 않도록 */
 }
-
 .photoUploadBox:hover {
-  background-color: #f0f0f0;
+  border-color: #007bff;
+}
+.photoUploadBox span {
+  font-size: 2.5rem;
+  color: #ccc;
+  font-weight: 300;
+  line-height: 1;
 }
 
 .photoPreview {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* 이미지가 박스에 꽉 차도록 */
+  border-radius: 8px; /* 미리보기 이미지에도 둥근 모서리 적용 */
 }
 
+.removePhotoButton {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
 
 /* 텍스트 리뷰 */
 .textReviewSection {

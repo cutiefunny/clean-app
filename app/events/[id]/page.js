@@ -94,9 +94,6 @@ export default function EventDetailPage() {
           </div>
         )}
         <p className={styles.eventDetailDescription}>{event.description}</p>
-        <div style={{ marginTop: '30px', textAlign: 'center' }}>
-          <Link href="/events" className={styles.link}>이벤트 목록으로 돌아가기</Link>
-        </div>
       </main>
     </div>
   );

@@ -10,7 +10,7 @@ const SECURITY_KEY = process.env.NEXT_PUBLIC_SECURITY_KEY;
 const AUTH_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json";
 const ADDR_URL = "https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json";
 
-// AccessToken을 발급받고 관리하는 커스텀 훅 (선택사항이지만 권장)
+// AccessToken을 발급받고 관리하는 커스텀 훅
 function useSgisToken() {
   const [accessToken, setAccessToken] = useState(null);
 
