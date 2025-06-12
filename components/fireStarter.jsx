@@ -4,11 +4,13 @@ import { db, auth } from '../lib/firebase/clientApp';
 // signInWithEmailAndPassword, createUserWithEmailAndPassword 추가
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { useModal } from '@/contexts/ModalContext';
 
 function FireStarter() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const { showAlert, showConfirm } = useModal();
 
   // 로그인/회원가입 관련 상태
   const [email, setEmail] = useState('');
@@ -100,7 +102,7 @@ function FireStarter() {
   // addItem, updateItem, deleteItem 함수는 이전과 동일하게 유지 (생략)
   const addItem = async (eventData) => {
     if (!auth.currentUser) {
-      alert("이벤트를 추가하려면 로그인이 필요합니다.");
+      showAlert("이벤트를 추가하려면 로그인이 필요합니다.");
       return;
     }
     try {
@@ -118,22 +120,22 @@ function FireStarter() {
       const docRef = await addDoc(eventCollectionRef, newEventData);
       const newItemWithId = { ...newEventData, id: docRef.id, createTm: new Date(), updateTm: new Date() };
       setItems(prevItems => [newItemWithId, ...prevItems]);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-      alert("이벤트 추가 중 오류가 발생했습니다.");
+    } catch (error) {
+      showAlert("이벤트 추가 중 오류가 발생했습니다.");
+      console.error("Error adding event:", error);
     }
   };
 
   const updateItem = async (eventId, dataToUpdate) => {
     if (!auth.currentUser) {
-      alert("이벤트를 수정하려면 로그인이 필요합니다.");
+      showAlert("이벤트를 수정하려면 로그인이 필요합니다.");
       return;
     }
     try {
       const eventDocRef = doc(db, 'event', eventId);
       const itemToUpdate = items.find(item => item.id === eventId);
       if (itemToUpdate && itemToUpdate.authorId !== auth.currentUser.uid) {
-        alert("자신이 작성한 이벤트만 수정할 수 있습니다.");
+        showAlert("자신이 작성한 이벤트만 수정할 수 있습니다.");
         return;
       }
       await updateDoc(eventDocRef, { ...dataToUpdate, updateTm: serverTimestamp() });
@@ -142,29 +144,29 @@ function FireStarter() {
           item.id === eventId ? { ...item, ...dataToUpdate, updateTm: new Date() } : item
         )
       );
-    } catch (e) {
-      console.error("Error updating document: ", e);
-      alert("이벤트 수정 중 오류가 발생했습니다.");
+    } catch (error) {
+      showAlert("이벤트 수정 중 오류가 발생했습니다.");
+      console.error("Error updating event:", error);
     }
   };
 
   const deleteItem = async (eventId) => {
     if (!auth.currentUser) {
-      alert("이벤트를 삭제하려면 로그인이 필요합니다.");
+      showAlert("이벤트를 삭제하려면 로그인이 필요합니다.");
       return;
     }
     try {
       const eventDocRef = doc(db, 'event', eventId);
       const itemToDelete = items.find(item => item.id === eventId);
       if (itemToDelete && itemToDelete.authorId !== auth.currentUser.uid) {
-        alert("자신이 작성한 이벤트만 삭제할 수 있습니다.");
+        showAlert("자신이 작성한 이벤트만 삭제할 수 있습니다.");
         return;
       }
       await deleteDoc(eventDocRef);
       setItems(prevItems => prevItems.filter(item => item.id !== eventId));
-    } catch (e) {
-      console.error("Error deleting document: ", e);
-      alert("이벤트 삭제 중 오류가 발생했습니다.");
+    } catch (error) {
+      showAlert("이벤트 삭제 중 오류가 발생했습니다.");
+      console.error("Error deleting event:", error);
     }
   };
 
@@ -233,9 +235,9 @@ function FireStarter() {
                     }
                   }}>Update</button>
                   <button onClick={() => {
-                    if (window.confirm(`'${item.title}' 이벤트를 정말 삭제하시겠습니까?`)) {
+                    showConfirm(`'${item.title}' 이벤트를 정말 삭제하시겠습니까?`, () => {
                       deleteItem(item.id);
-                    }
+                    });
                   }}>Delete</button>
                 </>
               )}
@@ -255,7 +257,7 @@ function FireStarter() {
               addItem({ title, contents });
               e.target.reset();
             } else {
-              alert("제목과 내용을 모두 입력해주세요.");
+              showAlert("제목과 내용을 모두 입력해주세요.");
             }
           }}>
             <div>

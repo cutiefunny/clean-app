@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './CheckModal.module.css';
 import useSmsVerification from '@/hooks/useSmsVerification';
+import { useModal } from '@/contexts/ModalContext';
 
 // [제거] Firebase Auth 관련 모듈은 더 이상 필요 없습니다.
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -18,6 +19,8 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
 
   const { sendVerificationCode, loading, error: apiError } = useSmsVerification();
   const [sentCodeFromServer, setSentCodeFromServer] = useState('');
+  
+  const { showAlert } = useModal();
   
   // [제거] reCAPTCHA 및 Firebase Auth 관련 상태/ref 제거
   // const recaptchaContainerRef = useRef(null);
@@ -59,7 +62,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        alert('일치하는 요청 내역이 없습니다. 이름과 휴대폰 번호를 다시 확인해주세요.');
+        showAlert('일치하는 요청 내역이 없습니다. 이름과 휴대폰 번호를 다시 확인해주세요.');
         return;
       }
       
@@ -67,7 +70,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
       const result = await sendVerificationCode(phoneNumber);
       
       if (result && result.success) {
-        alert('인증번호가 발송되었습니다.');
+        showAlert('인증번호가 발송되었습니다.');
         setIsCodeSent(true);
         setSentCodeFromServer(result.verificationCode);
       }
@@ -87,7 +90,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
 
     // [수정] 입력된 인증번호와 서버에서 받은 인증번호를 직접 비교
     if (verificationInput === sentCodeFromServer || verificationInput === '123456') { // 테스트용 코드
-      alert("본인인증에 성공했습니다.");
+      showAlert("본인인증에 성공했습니다.");
       
       const userAuthData = {
         name: name,

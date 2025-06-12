@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useModal } from '@/contexts/ModalContext';
 
 // /app/order.js
 
@@ -8,6 +9,7 @@ function OrderForm() {
     const [service, setService] = useState('');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
+    const { showAlert } = useModal();
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -15,7 +17,7 @@ function OrderForm() {
         console.log('Service:', service);
         console.log('Date:', date);
         console.log('Time:', time);
-        alert('신청이 완료되었습니다!'); // Display a simple alert
+        showAlert('신청이 완료되었습니다!');
     };
 
     return (

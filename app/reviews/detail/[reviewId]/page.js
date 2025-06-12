@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useModal } from '@/contexts/ModalContext';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -23,6 +24,7 @@ export default function ReviewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAuthor, setIsAuthor] = useState(false); // 작성자 여부 상태
+  const { showAlert, showConfirm } = useModal(); 
 
   useEffect(() => {
     if (!requestId) {
@@ -95,20 +97,20 @@ export default function ReviewDetailPage() {
   const handleDelete = async () => {
     if (!isAuthor || !review?.reviewId) return;
 
-    if (window.confirm("정말로 이 후기를 삭제하시겠습니까?")) {
+    showConfirm("정말로 이 후기를 삭제하시겠습니까?", async () => {
       try {
-        // 리뷰 문서 삭제
-        await deleteDoc(doc(db, 'reviews', review.reviewId));
-        // 원본 신청 내역의 reviewWritten 상태 업데이트
-        await updateDoc(doc(db, 'requests', requestId), { reviewWritten: false });
-        
-        alert("후기가 삭제되었습니다.");
-        router.push('/requests'); // 신청 내역 목록으로 이동
+      // 리뷰 문서 삭제
+      await deleteDoc(doc(db, 'reviews', review.reviewId));
+      // 원본 신청 내역의 reviewWritten 상태 업데이트
+      await updateDoc(doc(db, 'requests', requestId), { reviewWritten: false });
+      
+      showAlert("후기가 삭제되었습니다.");
+      router.push('/requests'); // 신청 내역 목록으로 이동
       } catch (err) {
-        console.error("Error deleting review:", err);
-        alert("후기 삭제 중 오류가 발생했습니다.");
+      console.error("Error deleting review:", err);
+      showAlert("후기 삭제 중 오류가 발생했습니다.");
       }
-    }
+    });
   };
   
   if (loading) {

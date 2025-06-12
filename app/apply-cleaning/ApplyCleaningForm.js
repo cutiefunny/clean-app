@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './ApplyCleaning.module.css';
 import Header2 from '@/components/Header2';
+import { useModal } from '@/contexts/ModalContext';
 
 // Firestore 모듈 및 db 객체 임포트
 import { db } from '@/lib/firebase/clientApp';
@@ -21,6 +22,7 @@ const TOTAL_STEPS = 5;
 export default function ApplyCleaningForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showAlert } = useModal();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false); // 제출 로딩 상태 추가
@@ -78,7 +80,7 @@ export default function ApplyCleaningForm() {
 
   const handleNextStep = () => {
     if (!isStepValid()) {
-      alert("현재 단계의 필수 정보를 모두 입력하거나 선택해주세요.");
+      showAlert("현재 단계의 필수 정보를 모두 입력하거나 선택해주세요.");
       return;
     }
     if (currentStep < TOTAL_STEPS) {
@@ -97,7 +99,7 @@ export default function ApplyCleaningForm() {
   // [수정] Firestore에 데이터를 저장하는 함수
   const handleSubmitApplication = async () => {
     if (!isStepValid()) {
-      alert("본인인증을 포함하여 모든 필수 정보를 입력해주세요.");
+      showAlert("본인인증을 포함하여 모든 필수 정보를 입력해주세요.");
       return;
     }
     setIsSubmitting(true);
@@ -125,12 +127,12 @@ export default function ApplyCleaningForm() {
         const docRef = await addDoc(collection(db, 'requests'), dataToSave);
         console.log("Document written with ID: ", docRef.id);
 
-        alert("견적 비교 신청이 성공적으로 완료되었습니다.");
+        showAlert("견적 비교 신청이 성공적으로 완료되었습니다.");
         router.push('/'); // 성공 후 홈으로 이동
 
     } catch (error) {
         console.error("Error adding document: ", error);
-        alert("신청 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+        showAlert("신청 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
         setIsSubmitting(false);
     }

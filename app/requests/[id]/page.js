@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useModal } from '@/contexts/ModalContext';
 
 // Firestore 모듈 및 db 객체 임포트
 import { doc, getDoc } from 'firebase/firestore';
@@ -16,6 +17,7 @@ export default function RequestDetailPage() {
   const router = useRouter();
   const params = useParams();
   const requestId = params?.id;
+  const { showAlert } = useModal();
 
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export default function RequestDetailPage() {
       
       const storedAuth = sessionStorage.getItem('identityVerifiedUser');
       if (!storedAuth) {
-        alert('본인인증이 필요합니다. 메인 페이지로 이동합니다.');
+        showAlert('본인인증이 필요합니다. 메인 페이지로 이동합니다.');
         router.replace('/');
         return;
       }
@@ -82,7 +84,7 @@ export default function RequestDetailPage() {
     };
     
     fetchRequestData();
-  }, [requestId, router]);
+  }, [requestId, router, showAlert]);
 
   if (loading) {
     return (

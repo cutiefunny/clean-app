@@ -5,14 +5,16 @@ import React from 'react';
 import Header2 from '@/components/Header2';
 import styles from './InquiryFormPage.module.css'; // CSS 모듈 생성 필요
 import { useRouter } from 'next/navigation';
+import { useModal } from '@/contexts/ModalContext';
 
 export default function InquiryFormPage() {
   const router = useRouter();
+  const { showAlert } = useModal();
 
   const handleSubmit = (event) => {
     event.preventDefault();
     // TODO: 폼 데이터 처리 및 제출 로직
-    alert('문의가 접수되었습니다. (실제 제출 로직 필요)');
+    showAlert('문의가 접수되었습니다. (실제 제출 로직 필요)');
     // router.push('/support'); // 제출 후 이동할 페이지
   };
 

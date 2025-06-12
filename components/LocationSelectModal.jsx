@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './LocationSelectModal.module.css';
+import { useModal } from '@/contexts/ModalContext';
 
 // API 정보
 const SERVICE_ID = process.env.NEXT_PUBLIC_SERVICE_ID;
@@ -36,6 +37,7 @@ function useSgisToken() {
 
 
 export default function LocationSelectModal({ isOpen, onClose, onSelect }) {
+  const { showAlert } = useModal();
   const accessToken = useSgisToken(); // AccessToken 발급
 
   const [siDoList, setSiDoList] = useState([]);
@@ -199,7 +201,7 @@ export default function LocationSelectModal({ isOpen, onClose, onSelect }) {
       onSelect(fullAddress);
       onClose();
     } else {
-      alert("읍/면/동까지 모두 선택해주세요.");
+      showAlert("읍/면/동까지 모두 선택해주세요.");
     }
   };
   

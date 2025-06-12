@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Header2 from '@/components/Header2';
 import styles from './WriteReviewPage.module.css';
 import Image from 'next/image';
+import { useModal } from '@/contexts/ModalContext';
 
 import { ScrollMenu } from 'react-horizontal-scrolling-menu';
 import 'react-horizontal-scrolling-menu/dist/styles.css'; // 라이브러리 기본 CSS
@@ -96,6 +97,7 @@ export default function WriteReviewPage() {
   const router = useRouter();
   const params = useParams();
   const requestId = params?.requestId;
+  const { showAlert } = useModal();
 
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -122,7 +124,7 @@ export default function WriteReviewPage() {
     }
     const storedAuth = sessionStorage.getItem('identityVerifiedUser');
     if (!storedAuth) {
-        alert('본인인증이 필요합니다.');
+        showAlert('본인인증이 필요합니다.');
         router.replace('/');
         return;
     }
@@ -160,7 +162,7 @@ export default function WriteReviewPage() {
       }
     };
     loadData();
-  }, [requestId, router]);
+  }, [requestId, router, showAlert]);
   
   // photos 상태가 변경될 때마다 미리보기 URL을 생성/해제하는 useEffect
   useEffect(() => {
@@ -196,7 +198,7 @@ export default function WriteReviewPage() {
     // 현재 사진 개수와 새로 추가될 사진 개수의 합이 최대치를 넘지 않도록 제한
     const remainingSlots = MAX_PHOTOS - photos.length;
     if (files.length > remainingSlots) {
-      alert(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다. ${remainingSlots}장 더 추가할 수 있습니다.`);
+      showAlert(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다. ${remainingSlots}장 더 추가할 수 있습니다.`);
     }
     const filesToAdd = files.slice(0, remainingSlots);
     setPhotos(prevPhotos => [...prevPhotos, ...filesToAdd]);
@@ -226,11 +228,11 @@ export default function WriteReviewPage() {
 
   const handleSubmitReview = async () => {
     if (rating === 0 || reviewText.trim() === '') {
-      alert("별점과 리뷰 내용을 모두 입력해주세요.");
+      showAlert("별점과 리뷰 내용을 모두 입력해주세요.");
       return;
     }
     if (!requestDetails) {
-      alert("리뷰를 작성할 대상 정보가 없습니다. 페이지를 새로고침 해주세요.");
+      showAlert("리뷰를 작성할 대상 정보가 없습니다. 페이지를 새로고침 해주세요.");
       return;
     }
     setIsSubmitting(true);
@@ -272,7 +274,7 @@ export default function WriteReviewPage() {
       const requestRef = doc(db, 'requests', requestId);
       await updateDoc(requestRef, { reviewWritten: true });
 
-      alert("후기가 성공적으로 저장되었습니다!");
+      showAlert("후기가 성공적으로 저장되었습니다!");
       router.push(`/requests`);
 
     } catch (err) {

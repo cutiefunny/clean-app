@@ -4,11 +4,13 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ApplyCleaning.module.css';
 import useSmsVerification from '@/hooks/useSmsVerification'; // 1. 훅 임포트
+import { useModal } from '@/contexts/ModalContext';
 
 const MAX_INQUIRY_LENGTH = 1000;
 const OTP_TIMER_DURATION = 180; // 3분 = 180초
 
 export default function Step5Confirm({ formData, updateFormData }) {
+  const { showAlert } = useModal();
   // 문의사항
   const [inquiryText, setInquiryText] = useState(formData.additionalRequest || '');
 
@@ -73,7 +75,7 @@ export default function Step5Confirm({ formData, updateFormData }) {
     const result = await sendVerificationCode(phoneNumber);
     
     if (result && result.success) {
-      alert('인증번호가 전송되었습니다.');
+      showAlert('인증번호가 전송되었습니다.');
       setIsCodeSent(true);
       setTimer(OTP_TIMER_DURATION);
       setVerificationCode('');
@@ -92,7 +94,7 @@ export default function Step5Confirm({ formData, updateFormData }) {
     
     if (verificationCode === sentCodeFromServer || verificationCode === '123456') { // 테스트용 코드
       setIsVerified(true);
-      alert('본인인증에 성공했습니다.');
+      showAlert('본인인증에 성공했습니다.');
     } else {
       setOtpError('인증번호가 올바르지 않습니다.');
       setIsVerified(false);

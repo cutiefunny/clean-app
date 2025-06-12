@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useModal } from '@/contexts/ModalContext';
 
 // Firestore 모듈 및 db 객체 임포트
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -20,6 +21,7 @@ const RequestListPage = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { showAlert } = useModal();
 
   // 화면 크기 감지 로직
   useEffect(() => {
@@ -39,7 +41,7 @@ const RequestListPage = () => {
       
       const storedAuth = sessionStorage.getItem('identityVerifiedUser');
       if (!storedAuth) {
-        alert('본인인증이 필요합니다. 메인 페이지로 이동합니다.');
+        showAlert('본인인증이 필요합니다. 메인 페이지로 이동합니다.');
         router.replace('/');
         return;
       }
@@ -104,7 +106,7 @@ const RequestListPage = () => {
     };
 
     fetchRequests();
-  }, [router]);
+  }, [router, showAlert]);
 
   const handleBack = () => {
     router.back();
