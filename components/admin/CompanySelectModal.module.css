@@ -1,0 +1,156 @@
+/* /components/admin/CompanySelectModal.module.css (수정) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.dialog {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.searchIconWrapper {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+}
+
+.companyList {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.companyItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.companyItem:hover {
+  background-color: #f8f9fa;
+}
+
+.checkboxInput {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.companyName {
+  font-size: 1rem;
+}
+
+.selectedTagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  background-color: #e9ecef;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+}
+
+.tag span {
+  margin-right: 6px;
+}
+
+.tag button {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  line-height: 1;
+}
+.tag button:hover {
+  color: #343a40;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  flex-shrink: 0;
+}
+
+.primaryButton, .secondaryButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background-color: #007bff;
+  color: white;
+}
+.primaryButton:disabled {
+  background-color: #6c757d;
+  opacity: 0.7;
+}
+
+.secondaryButton {
+  background-color: #e9ecef;
+  color: #495057;
+}

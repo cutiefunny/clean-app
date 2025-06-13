@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../board.module.css'; // 공통 CSS Module (경로 확인!)
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import {
   collection,
   getDocs,
@@ -21,10 +23,9 @@ import { useAuth } from '@/app/context/AuthContext';
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 
 const ITEMS_PER_PAGE = 10;
-// "배정업체명" 필터 옵션 (Firestore의 실제 업체명 데이터나 '전체' 등으로 구성)
-const ASSIGNED_COMPANY_OPTIONS = ["전체", "A업체", "B업체", "C청소"];
+
 const COLLECTION_NAME = "requests";
-const STATUS_SENT = "전송"; // Firestore에 저장된 실제 '전송 완료' 상태값으로 변경 필요
+const STATUS_SENT = ["전송", "청소완료"]; // "전송" 상태의 요청을 필터링하기 위한 배열
 
 export default function SentRequestsPage() {
   const router = useRouter();
@@ -34,13 +35,33 @@ export default function SentRequestsPage() {
   const { permissions, isSuperAdmin } = useAuth();
   const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
-  const [selectedAssignedCompany, setSelectedAssignedCompany] = useState(ASSIGNED_COMPANY_OPTIONS[0]);
+  const [companyOptions, setCompanyOptions] = useState([{ id: 'all', name: '전체' }]);
+  const [selectedAssignedCompany, setSelectedAssignedCompany] = useState("전체");
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  useEffect(() => {
+    const fetchCompanyOptions = async () => {
+      try {
+        const cleanersQuery = query(collection(db, 'cleaners'), orderBy('businessName', 'asc'));
+        const querySnapshot = await getDocs(cleanersQuery);
+        const fetchedCompanies = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().businessName,
+        }));
+        // [수정] 기존 상태에 덧붙이지 않고, 매번 새로운 배열로 상태를 설정합니다.
+        const staticOptions = [{ id: 'all', name: '전체' }];
+        setCompanyOptions([...staticOptions, ...fetchedCompanies]);
+      } catch (err) {
+        console.error("Error fetching company options:", err);
+      }
+    };
+    fetchCompanyOptions();
+  }, []); // 마운트 시 한 번만 실행
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -58,11 +79,17 @@ export default function SentRequestsPage() {
       const conditions = [];
 
       // 1. **필수 필터**: status가 "전송"인 문서만 가져옴
-      conditions.push(where('status', '==', STATUS_SENT));
+      conditions.push(where('status', 'in', STATUS_SENT));
 
       // 2. 배정업체명 필터링
       if (selectedAssignedCompany !== "전체") {
-        conditions.push(where('assignedCompanyName', '==', selectedAssignedCompany));
+        // 'assignedCompanies' 배열에 특정 업체 객체가 포함되어 있는지 확인
+        // 이 쿼리가 작동하려면 Firestore 스키마의 assignedCompanies 필드가 객체의 배열이어야 합니다.
+        // 예: assignedCompanies: [{id: '...', name: '...'}, ...]
+        const selectedCompanyObject = companyOptions.find(opt => opt.name === selectedAssignedCompany);
+        if (selectedCompanyObject) {
+            conditions.push(where('assignedCompanies', 'array-contains', selectedCompanyObject));
+        }
       }
 
       // 3. 검색어 필터링 (신청자명 기준 "시작 문자열" 검색 예시)
@@ -107,10 +134,99 @@ export default function SentRequestsPage() {
     setCurrentPage(1);
   };
 
-  const handleExcelDownload = async () => {
-    // TODO: 엑셀 다운로드 로직 (이전 답변의 exceljs 로직 참고)
-    alert('엑셀 다운로드 기능 구현 예정입니다.');
-  };
+  const handleExcelDownload = async () => { // 함수를 async로 변경
+      if (requests.length === 0) {
+        alert('다운로드할 데이터가 없습니다.');
+        return;
+      }
+  
+      // 1. Excel 워크북 및 워크시트 생성
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('신청내역'); // 시트 이름 설정
+  
+      // 2. 컬럼 정의 (헤더, 데이터 매핑을 위한 key, 너비 등)
+      // worksheet.columns의 각 객체 key는 아래 dataForExcel 객체의 key와 일치해야 합니다.
+      worksheet.columns = [
+        { header: '번호', key: 'displayNumber', width: 8 },
+        { header: '분야', key: 'field', width: 20 },
+        { header: '적용매장', key: 'assignedCompanyName', width: 20 },
+        { header: '신청자명', key: 'applicantName', width: 15 },
+        { header: '신청자 연락처', key: 'applicantContact', width: 20 },
+        { header: '상태', key: 'status', width: 15 },
+        { header: '신청일', key: 'requestDateStr', width: 15 },
+        // 필요한 다른 컬럼 추가
+      ];
+  
+      // 3. 워크시트에 사용할 데이터 준비
+      // 현재 페이지에 표시되는 requests 데이터를 사용합니다.
+      // 전체 필터링된 데이터를 원하시면 fetchPendingRequests에서 slice 전의 데이터를 사용해야 합니다.
+      const dataForExcel = requests.map((req, index) => ({
+        displayNumber: (totalItems - ((currentPage - 1) * ITEMS_PER_PAGE)) - index, // 화면에 표시되는 번호
+        field: req.field,
+        assignedCompanyName: req.assignedCompanyName || '-',
+        applicantName: req.applicantName,
+        applicantContact: req.applicantContact,
+        status: req.status,
+        requestDateStr: req.requestDate ? formatDate(req.requestDate) : 'N/A',
+        // id: req.id, // 내부 ID가 필요하면 추가
+      }));
+  
+      // 4. 데이터 행 추가
+      worksheet.addRows(dataForExcel);
+  
+      // 5. 헤더 행 스타일링 (선택 사항)
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true, name: 'Arial', size: 11, color: { argb: 'FFFFFFFF' } }; // 흰색 텍스트
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF4A5568' }, // 헤더 배경색 (기존 저장 버튼 색상과 유사)
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = { // 모든 셀에 테두리 적용
+          top: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+          left: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+          bottom: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+          right: { style: 'thin', color: { argb: 'FFD4D4D4' } }
+        };
+      });
+      
+      // 6. 모든 데이터 셀에 기본 스타일 적용 (선택 사항 - 예: 테두리)
+      worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+          if (rowNumber > 1) { // 헤더 제외
+              row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+                  cell.border = {
+                      top: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+                      left: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+                      bottom: { style: 'thin', color: { argb: 'FFD4D4D4' } },
+                      right: { style: 'thin', color: { argb: 'FFD4D4D4' } }
+                  };
+                  // 특정 컬럼 중앙 정렬 (예시: 번호, 상태, 신청일)
+                  if ([1, 6, 7].includes(colNumber)) { // 컬럼 번호 기준 (1부터 시작)
+                      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                  } else {
+                      cell.alignment = { vertical: 'middle' };
+                  }
+              });
+          }
+      });
+  
+  
+      // 7. Excel 파일 생성 및 다운로드
+      const today = new Date();
+      const dateString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+      const fileName = `청소신청내역(전송대기)_${dateString}.xlsx`;
+  
+      try {
+        const buffer = await workbook.xlsx.writeBuffer(); // 비동기 작업
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, fileName); // file-saver를 사용하여 파일 다운로드
+      } catch (err) {
+        console.error("Error writing excel buffer or saving file: ", err);
+        alert('엑셀 파일 생성 중 오류가 발생했습니다.');
+      }
+    };
+  
 
   const handleViewAssignedCompany = (companyName, companyId) => {
     // TODO: 배정된 업체 상세 정보 보기 로직 (모달 또는 페이지 이동)
@@ -156,7 +272,7 @@ export default function SentRequestsPage() {
         <div className={styles.filterGroup}>
           <label htmlFor="assignedCompanyFilter">배정업체명:</label>
           <select id="assignedCompanyFilter" value={selectedAssignedCompany} onChange={(e) => { setSelectedAssignedCompany(e.target.value); setCurrentPage(1);}} className={styles.filterDropdown}>
-            {ASSIGNED_COMPANY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            {companyOptions.map(opt => <option key={opt.id} value={opt.name}>{opt.name}</option>)}
           </select>
         </div>
         <div className={styles.searchInputContainer} style={{maxWidth: '400px'}}>
@@ -171,9 +287,9 @@ export default function SentRequestsPage() {
       {/* 액션 버튼 영역 */}
       <div className={styles.filterSection} style={{justifyContent: 'space-between'}}>
         <button onClick={handleExcelDownload} className={styles.button}>엑셀 다운</button>
-        { canEdit && (
+        {/* { canEdit && (
           <button className={styles.primaryButton} disabled={true} title="이미 전송된 내역입니다.">일괄 매칭 선택 적용</button>
-        )}
+        )} */}
       </div>
 
       {error && <p className={styles.errorText}>{error}</p>}
@@ -201,15 +317,11 @@ export default function SentRequestsPage() {
                 <td className={styles.centerTd}>{(totalItems - ((currentPage - 1) * ITEMS_PER_PAGE)) - index}</td>
                 <td className={styles.td}>{req.field}</td>
                 <td className={styles.td}>
-                  {req.assignedCompanyName && req.assignedCompanyName !== '-' ? (
-                    <button 
-                      onClick={() => handleViewAssignedCompany(req.assignedCompanyName, req.assignedCompanyId)} 
-                      className={styles.button} 
-                      style={{padding: '3px 8px', fontSize: '12px', backgroundColor: '#007bff', color: 'white'}}
-                    >
-                      확인
-                    </button>
-                  ) : '-'}
+                  <div className={styles.tagsContainer}>
+                    {req.assignedCompanies && req.assignedCompanies.length > 0 ? (
+                      req.assignedCompanies.map(c => <span key={c.id} className={styles.tagCompany}>{c.name}</span>)
+                    ) : '-'}
+                  </div>
                 </td>
                 <td className={styles.tdLeft}>{req.applicantName}</td>
                 <td className={styles.centerTd}>{req.applicantContact}</td>
@@ -217,7 +329,7 @@ export default function SentRequestsPage() {
                 {canEdit && (
                   <td >
                     <div className={styles.actionTdInnerDiv}>
-                      <button onClick={() => handleEdit(req.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>수정</button>
+                      <button onClick={() => handleEdit(req.id)} className={`${styles.button}`} style={{backgroundColor: '#5cb85c', color: 'white'}}>상세</button>
                       <button onClick={() => handleDelete(req.id)} className={`${styles.button}`} style={{backgroundColor: '#d9534f', color: 'white'}}>삭제</button>
                     </div>
                   </td>

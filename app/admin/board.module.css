@@ -442,6 +442,11 @@
   border: 1px solid #dee2e6;
 }
 
+.tagCompany {
+  color: #F7941D;
+  font-family: Noto Sans KR, sans-serif; /* 회사명 폰트 */
+}
+
 .tagPrimary {
   composes: tag;
   background-color: #007bff;

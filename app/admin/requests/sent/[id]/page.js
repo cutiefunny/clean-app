@@ -127,9 +127,10 @@ export default function SentRequestDetailPage() {
         {/* '적용매장' 필드 추가 */}
         <div className={styles.detailLabel}>적용매장</div>
         <div className={`${styles.detailValue} ${styles.tagsContainer}`}>
-          {requestDetail.sentToCompanies && requestDetail.sentToCompanies.length > 0 ? (
-            requestDetail.sentToCompanies.map((company, index) => (
-              <span key={index} className={styles.tagPrimary}>{company.name || company}</span>
+          {/* 'assignedCompanies' 필드를 확인합니다. */}
+          {requestDetail.assignedCompanies && requestDetail.assignedCompanies.length > 0 ? (
+            requestDetail.assignedCompanies.map((company) => (
+              <span key={company.id} className={styles.tagCompany}>{company.name}</span>
             ))
           ) : (
             '정보 없음'

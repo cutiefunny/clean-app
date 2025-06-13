@@ -5,11 +5,12 @@ import { useState, useEffect, useCallback } from 'react';
 // [수정] useSearchParams 임포트 추가
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from '../../board.module.css';
-import { collection, getDocs, query, where, orderBy, Timestamp, getCountFromServer, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, Timestamp, getCountFromServer, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/clientApp';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useAuth } from '../../../context/AuthContext';
+import CompanySelectModal from '@/components/admin/CompanySelectModal';
 
 // 아이콘 SVG (필요시 사용)
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -38,6 +39,8 @@ export default function PendingRequestsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCompanyOptions = async () => {
@@ -259,10 +262,53 @@ export default function PendingRequestsPage() {
 
 
   const handleBatchMatchApply = () => {
-    if (selectedIds.length === 0) { alert('먼저 매칭할 신청 건을 선택해주세요.'); return; }
-    alert(`${selectedIds.length}건에 대해 일괄 매칭 적용 기능 구현 예정입니다.`);
-    console.log("Selected IDs for batch matching:", selectedIds);
+    if (selectedIds.length === 0) {
+      alert('먼저 매칭할 신청 건을 선택해주세요.');
+      return;
+    }
+    setIsCompanyModalOpen(true); // 업체 선택 모달 열기
   };
+
+  const handleBatchCompanySelect = async (selectedCompanies) => {
+    if (!selectedCompanies || selectedCompanies.length === 0) {
+      alert('적용할 업체를 하나 이상 선택해주세요.');
+      return;
+    }
+
+    try {
+      // Firestore 일괄 쓰기(batch) 생성
+      const batch = writeBatch(db);
+      
+      const assignedCompaniesData = selectedCompanies.map(c => ({
+        id: c.id,
+        name: c.name
+      }));
+
+      // 선택된 모든 요청 문서에 대해 업데이트 작업을 배치에 추가
+      selectedIds.forEach(requestId => {
+        const docRef = doc(db, COLLECTION_NAME, requestId);
+        batch.update(docRef, {
+          assignedCompanies: assignedCompaniesData,
+          status: "전송"
+        });
+      });
+
+      // 배치 작업 실행
+      await batch.commit();
+
+      const companyNames = selectedCompanies.map(c => c.name).join(', ');
+      alert(`${selectedIds.length}건의 신청이 '${companyNames}'으로 일괄 변경되었습니다.`);
+      
+      setIsCompanyModalOpen(false); // 모달 닫기
+      setSelectedIds([]); // 선택 초기화
+      fetchPendingRequests(); // 목록 새로고침
+
+    } catch (err) {
+      console.error("Error during batch update:", err);
+      alert('일괄 적용 중 오류가 발생했습니다.');
+    }
+  };
+
   const handleEdit = (id) => { router.push(`/admin/requests/pending/${id}`); }; // 상세 페이지로 이동
 
   const handleDelete = async (id) => {
@@ -324,7 +370,13 @@ export default function PendingRequestsPage() {
       <div className={styles.filterSection} style={{justifyContent: 'space-between'}}> {/* 버튼들을 양쪽으로 배치 */}
         <button onClick={handleExcelDownload} className={styles.button}>엑셀 다운</button>
         {canEdit && (
-        <button onClick={handleBatchMatchApply} className={styles.primaryButton}>일괄 매칭 선택 적용</button>
+          <button 
+            onClick={handleBatchMatchApply} 
+            className={styles.primaryButton}
+            disabled={selectedIds.length === 0}
+          >
+            일괄 매칭 선택 적용
+          </button>
         )}
       </div>
 
@@ -383,6 +435,12 @@ export default function PendingRequestsPage() {
           <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={styles.pageButton}>&gt;</button>
         </div>
       )}
+
+      <CompanySelectModal
+        isOpen={isCompanyModalOpen}
+        onClose={() => setIsCompanyModalOpen(false)}
+        onSelect={handleBatchCompanySelect}
+      />
     </div>
   );
 }

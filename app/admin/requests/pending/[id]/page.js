@@ -8,6 +8,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore'; // updateDoc, serverTimestamp 추가 (수정 기능 대비)
 import { db, auth } from '@/lib/firebase/clientApp';
 import styles from '../../../board.module.css'; // 경로 확인
+import CompanySelectModal from '@/components/admin/CompanySelectModal';
 
 const COLLECTION_NAME = "requests";
 
@@ -21,6 +22,7 @@ export default function RequestDetailPage() {
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false); // 수정 모드 상태
   const [formData, setFormData] = useState({}); // 수정용 폼 데이터 상태
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
   const fetchRequestDetail = useCallback(async () => {
     // ... (기존 fetchRequestDetail 로직은 동일) ...
@@ -83,7 +85,38 @@ export default function RequestDetailPage() {
   };
 
   const handleSelectCompany = () => {
-    alert(`신청 ID ${requestId}에 대한 적용매장 선택 기능 구현 예정입니다.`);
+    setIsCompanyModalOpen(true);
+  };
+
+  // [수정] 모달에서 다중 선택된 업체 목록을 처리하는 핸들러
+  const handleCompanySelected = async (selectedCompanies) => {
+    if (!selectedCompanies || selectedCompanies.length === 0) {
+      alert('업체를 하나 이상 선택해주세요.');
+      return;
+    }
+
+    try {
+      const docRef = doc(db, COLLECTION_NAME, requestId);
+      
+      // 선택된 업체들의 정보를 {id, name} 형태의 배열로 가공
+      const assignedCompaniesData = selectedCompanies.map(c => ({
+        id: c.id,
+        name: c.name
+      }));
+      
+      await updateDoc(docRef, {
+        assignedCompanies: assignedCompaniesData, // 업체 배열 저장
+        status: '전송' // 상태 변경
+      });
+
+      const companyNames = selectedCompanies.map(c => c.name).join(', ');
+      alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
+      setIsCompanyModalOpen(false); // 모달 닫기
+      fetchRequestDetail(); // 변경된 데이터 다시 불러오기
+    } catch (err) {
+      console.error("Error updating company assignment: ", err);
+      alert('업체 배정 중 오류가 발생했습니다.');
+    }
   };
 
   const formatDate = (date, includeTime = false) => {
@@ -261,9 +294,17 @@ export default function RequestDetailPage() {
             <div className={styles.detailValue} style={{whiteSpace: 'pre-wrap'}}>{requestDetail.inquiryNotes || '내용 없음'}</div>
             
             <div className={styles.detailLabel}>상태</div>
-            <div className={styles.detailValue} style={{color: requestDetail.status === '전송대기' ? '#dc3545' : (requestDetail.status === '매칭완료' ? '#28a745' : '#6c757d'), fontWeight: 'bold'}}>
+            <div className={styles.detailValue} style={{color: requestDetail.status === '전송대기' ? '#dc3545' : (requestDetail.status === '전송' ? '#28a745' : '#6c757d'), fontWeight: 'bold'}}>
                 {requestDetail.status || '정보 없음'}
             </div>
+
+            <div className={styles.detailLabel}>적용매장</div>
+            <div className={styles.detailValue}>
+              {requestDetail.assignedCompanies && requestDetail.assignedCompanies.length > 0
+                ? requestDetail.assignedCompanies.map(c => c.name).join(', ')
+                : '미배정'}
+            </div>
+
             {/* 신청등록일 추가 표시 예시 */}
             <div className={styles.detailLabel}>신청등록일</div>
             <div className={styles.detailValue}>{formatDate(requestDetail.createdAt, true)}</div>
@@ -279,6 +320,11 @@ export default function RequestDetailPage() {
           </div>
         </>
       )}
+      <CompanySelectModal
+        isOpen={isCompanyModalOpen}
+        onClose={() => setIsCompanyModalOpen(false)}
+        onSelect={handleCompanySelected}
+      />
     </div>
   );
 }

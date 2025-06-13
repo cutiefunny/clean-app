@@ -1,0 +1,175 @@
+/* /app/admin/cleaners/members/[id]/edit.module.css (새 파일 생성) */
+
+.pageContainer {
+  padding: 24px;
+  background-color: #fff;
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+.header {
+  border-bottom: 2px solid #333;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.formGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 150px 1fr; /* 라벨 너비 고정 */
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  min-height: 60px;
+}
+
+.label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #495057;
+  padding-left: 12px;
+}
+
+.value {
+  padding: 12px;
+  font-size: 0.95rem;
+}
+
+.input {
+  width: 100%;
+  max-width: 350px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.primaryButton, .secondaryButton {
+  padding: 10px 24px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background-color: #343a40;
+  color: white;
+  border-color: #343a40;
+}
+.primaryButton:disabled {
+  opacity: 0.6;
+}
+
+.secondaryButton {
+  background-color: #f8f9fa;
+  color: #343a40;
+  border-color: #ced4da;
+}
+
+/* Toggle Switch */
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toggleLabelOn, .toggleLabelOff {
+  font-weight: 500;
+}
+.toggleLabelOn { color: #007bff; }
+.toggleLabelOff { color: #6c757d; }
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 28px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #007bff;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Image Upload */
+.uploadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fileInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fileSelectButton {
+  padding: 6px 12px;
+  border: 1px solid #6c757d;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fileName {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+.imagePreview {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  position: relative;
+}
+.imagePreview img {
+  border-radius: 4px;
+}
+
+.errorText {
+  color: red;
+  margin-top: 10px;
+}
