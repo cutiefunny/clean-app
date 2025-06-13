@@ -63,7 +63,31 @@ export default function LocationSelectModal({ isOpen, onClose, onSelect }) {
           const response = await fetch(`${ADDR_URL}?accessToken=${accessToken}`);
           const data = await response.json();
           if (data.errCd === 0) {
-            setSiDoList(data.result);
+            const priorityOrder = ["서울특별시", "인천광역시", "경기도"];
+            
+            const sortedList = data.result.sort((a, b) => {
+              const nameA = a.addr_name;
+              const nameB = b.addr_name;
+
+              const indexA = priorityOrder.indexOf(nameA);
+              const indexB = priorityOrder.indexOf(nameB);
+
+              // 둘 다 우선순위 목록에 있는 경우
+              if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+              }
+              // a만 우선순위 목록에 있는 경우
+              if (indexA !== -1) return -1;
+              // b만 우선순위 목록에 있는 경우
+              if (indexB !== -1) return 1;
+              
+              // 둘 다 우선순위 목록에 없는 경우 (가나다순 정렬)
+              return nameA.localeCompare(nameB, 'ko');
+            });
+
+            console.log("Sorted SiGunGu List:", sortedList);
+
+            setSiDoList(sortedList);
           } else {
             setError(data.errMsg);
           }

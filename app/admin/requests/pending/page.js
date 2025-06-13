@@ -15,7 +15,6 @@ import { useAuth } from '../../../context/AuthContext';
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
 
 const ITEMS_PER_PAGE = 10; // 이미지에는 4개만 보이지만, 일반적인 게시판 수 고려
-const ASSIGNED_COMPANY_OPTIONS = ["전체", "A업체", "B업체", "미배정"]; // 배정업체명 필터 옵션 예시
 const STATUS_PENDING = "전송대기"; // Firestore에 저장된 실제 '전송대기' 상태값으로 변경
 
 const COLLECTION_NAME = "requests"; // Firestore 컬렉션 이름
@@ -29,8 +28,9 @@ export default function PendingRequestsPage() {
   const { permissions, isSuperAdmin } = useAuth();
   const canEdit = !loading && (isSuperAdmin || permissions?.requests === 'edit');
 
-  // 필터 및 검색 상태 (이전과 동일)
-  const [selectedAssignedCompany, setSelectedAssignedCompany] = useState(ASSIGNED_COMPANY_OPTIONS[0]);
+  const [companyOptions, setCompanyOptions] = useState([{ id: 'all', name: '전체' }, { id: 'unassigned', name: '미배정' }]);
+  const [selectedAssignedCompany, setSelectedAssignedCompany] = useState("전체");
+
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
@@ -38,6 +38,29 @@ export default function PendingRequestsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  useEffect(() => {
+    const fetchCompanyOptions = async () => {
+      try {
+        const cleanersQuery = query(collection(db, 'cleaners'), orderBy('businessName', 'asc'));
+        const querySnapshot = await getDocs(cleanersQuery);
+        
+        const fetchedCompanies = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          name: doc.data().businessName
+        }));
+
+        // [수정] 기존 상태에 덧붙이지 않고, 고정된 기본 옵션과 새로 불러온 옵션을 합쳐서 새로운 배열을 만듭니다.
+        const staticOptions = [{ id: 'all', name: '전체' }, { id: 'unassigned', name: '미배정' }];
+        setCompanyOptions([...staticOptions, ...fetchedCompanies]);
+
+      } catch (err) {
+        console.error("Error fetching company options:", err);
+      }
+    };
+
+    fetchCompanyOptions();
+  }, []); // 이 useEffect는 마운트 시 한 번만 실행됩니다.
 
   // 검색어 디바운싱 (이전과 동일)
   useEffect(() => {
@@ -275,8 +298,17 @@ export default function PendingRequestsPage() {
       <div className={styles.filterSection} style={{justifyContent: 'flex-start', marginBottom: '10px'}}> {/* 좌측 정렬 */}
         <div className={styles.filterGroup}>
           <label htmlFor="assignedCompanyFilter">배정업체명:</label>
-          <select id="assignedCompanyFilter" value={selectedAssignedCompany} onChange={(e) => { setSelectedAssignedCompany(e.target.value); setCurrentPage(1);}} className={styles.filterDropdown}>
-            {ASSIGNED_COMPANY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          <select 
+            id="assignedCompanyFilter" 
+            value={selectedAssignedCompany} 
+            onChange={(e) => { setSelectedAssignedCompany(e.target.value); setCurrentPage(1);}} 
+            className={styles.filterDropdown}
+          >
+            {companyOptions.map(opt => (
+              <option key={opt.id} value={opt.name}>
+                {opt.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className={styles.searchInputContainer} style={{maxWidth: '400px'}}> {/* 검색창 너비 제한 */}
