@@ -141,6 +141,9 @@ export default function ReviewListPage() {
       });
 
       // [추가] 클라이언트 사이드 필터링 및 정렬
+      //blind == true가 아닌 리뷰만 필터링
+      combinedData = combinedData.filter(item => !item.blind);
+      
       if (selectedBuildingType !== "전체") {
         combinedData = combinedData.filter(item => item.buildingType === selectedBuildingType);
       }

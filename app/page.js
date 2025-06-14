@@ -48,7 +48,7 @@ export default function Home() {
           // FAQ (고객 지원)
           getDocs(query(collection(db, "companyNotices"), orderBy("createdAt", "desc"))),
           // 리뷰 데이터: 최신순으로 5개만 가져오기
-          getDocs(query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(5)))
+          getDocs(query(collection(db, "reviews"), where("blind", "!=", true), orderBy("createdAt", "desc"), limit(5)))
         ]);
 
         // 메인 슬라이더 데이터 처리

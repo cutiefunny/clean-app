@@ -1,59 +1,99 @@
-// components/Footer.js
-'use client'; // Link 컴포넌트 사용 시에는 필수는 아니지만, router 사용 등을 고려해 추가 가능
+// /components/Footer.js
+'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Footer.module.css';
-import Link from 'next/link'; // next/link 임포트
-// import { useRouter } from 'next/navigation'; // useRouter 사용 시
+import Link from 'next/link';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/clientApp'; // Firebase 경로 확인
 
-const Footer = () => {
-  // const router = useRouter(); // useRouter 사용 시
+const DOCUMENT_ID = "mainDetails";
+const COLLECTION_NAME = "companyInfo";
 
-  // const navigateToCompanyInfo = () => {
-  //   router.push('/company-info');
-  // };
+export default function Footer() {
+  // [수정] 여러 데이터를 한 번에 관리하기 위해 상태를 객체로 변경
+  const [footerData, setFooterData] = useState({
+    footerContent: '',
+    phoneNumber: '',
+    serviceHours: '',
+  });
+  const [loading, setLoading] = useState(true);
 
-  // const navigateToSupport = () => {
-  //   router.push('/support'); // 고객지원 페이지 경로 예시
-  // };
+  useEffect(() => {
+    const fetchFooterInfo = async () => {
+      try {
+        const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          // [수정] Firestore에서 모든 관련 데이터를 가져와 상태에 설정
+          setFooterData({
+            footerContent: data.footerContent || '회사 정보가 없습니다.',
+            phoneNumber: data.customerServicePhone || '전화번호 정보 없음',
+            serviceHours: data.customerServiceHours || '상담시간 정보 없음',
+          });
+        } else {
+          console.log("No footer content found in Firestore.");
+          setFooterData({
+            footerContent: '회사 정보 문서를 찾을 수 없습니다.',
+            phoneNumber: '-',
+            serviceHours: '-',
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching footer content: ", error);
+        setFooterData({
+          footerContent: '정보를 불러오는 중 오류가 발생했습니다.',
+          phoneNumber: '-',
+          serviceHours: '-',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFooterInfo();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   return (
     <footer className={styles.footer}>
       <div style={{ paddingTop: '10px', paddingBottom: '20px', width: '100%', alignItems: 'center' }}>
         <span className={styles.callCenter}>
-          고객센터 <img src="/images/phone.png" alt="Phone Icon" style={{ verticalAlign: 'middle' }} /> <span className={styles.phoneNumber}>02-123-4567</span>
+          고객센터 <img src="/images/phone.png" alt="Phone Icon" style={{ verticalAlign: 'middle' }} /> 
+          {/* [수정] Firestore에서 가져온 전화번호 표시 */}
+          <span className={styles.phoneNumber}>{footerData.phoneNumber}</span>
         </span>
         <span className={styles.callCenter}>
-          고객센터 상담시간 09:00~20:00
+          {/* [수정] Firestore에서 가져온 상담시간 표시 */}
+          고객센터 상담시간 {footerData.serviceHours}
         </span>
       </div>
       <div className={styles.company}>
-        {/* 회사소개 부분을 Link로 감싸기 */}
         <Link href="/company-info" className={styles.footerLink}>
           <img src="/images/company.png" alt="Company Icon" style={{ verticalAlign: 'middle', marginRight: '4px' }} />
           회사소개
         </Link>
-        <Link href="/support" className={styles.footerLink} style={{ marginLeft: '20px' }}>
+        <Link href="/faq" className={styles.footerLink} style={{ marginLeft: '20px' }}>
           <img src="/images/support.png" alt="Support Icon" style={{ verticalAlign: 'middle', marginRight: '4px' }} />
           고객지원
         </Link>
       </div>
       <div className={styles.address}>
-        (주)픽큐 | 대표 : 홍길동 | 서울시 강남구 논현로 K빌딩 1025호
-        <br />
-        서울시 강남구 논현로 K빌딩 1025호 | 02-1234-5678
-        <br />
-        gildong@naver.com | 사업자 등록번호 1234-567890
-        <br />
-        개인정보관리책임자 : 홍길동 | 호스팅제공자 : 홍길동
-        <br />
-        통신판매업(제2025-서울강남-1234호)
-        <br />
-        <br />
-        copyrightⓒ All rights reserved.
+        {loading ? (
+          '로딩 중...'
+        ) : (
+          <>
+            {footerData.footerContent.split('\n').map((line, index) => (
+              <React.Fragment key={index}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
+            <br />
+            copyrightⓒ All rights reserved.
+          </>
+        )}
       </div>
     </footer>
   );
 };
-
-export default Footer;

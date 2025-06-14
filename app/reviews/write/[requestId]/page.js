@@ -258,6 +258,7 @@ export default function WriteReviewPage() {
         userName: requestDetails.applicantName || requestDetails.userName,
         userPhone: requestDetails.applicantContact || requestDetails.userPhone,
         serviceType: requestDetails.field || requestDetails.serviceType,
+        blind: false, // 기본값은 false로 설정
         updatedAt: serverTimestamp(),
       };
       
