@@ -88,6 +88,11 @@ function AdminLayoutContent({ children }) {
       permissionKey: 'companyIntroduction',
       path: '/admin/company-introduction', // 1-depth 메뉴
     },
+    {
+      name: '청소옵션관리',
+      permissionKey: 'cleaningOptions',
+      path: '/admin/cleaning-options', // 1-depth 메뉴
+    },
   ];
 
   useEffect(() => {

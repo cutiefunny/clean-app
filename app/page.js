@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
-import { collection, getDocs, query, where, Timestamp, orderBy, limit } from 'firebase/firestore'; // limit 추가
+import { collection, getDocs, doc, getDoc, query, where, Timestamp, orderBy, limit } from 'firebase/firestore'; // doc, getDoc 추가
 
 import ImageSlider from '@/components/ImageSlider';
 import CustomizableCard from '@/components/CustomizableCard';
@@ -17,14 +17,16 @@ import Accordion from '@/components/Accordion';
 export default function Home() {
   const router = useRouter();
 
-  // 1. Firestore에서 가져올 데이터에 대한 상태 변수 선언
+  // Firestore에서 가져올 데이터에 대한 상태 변수 선언
   const [sliderImages, setSliderImages] = useState([]);
   const [eventImages, setEventImages] = useState([]);
-  const [reviews, setReviews] = useState([]); // 리뷰 데이터 상태 추가
+  const [reviews, setReviews] = useState([]);
   const [faqData, setFaqData] = useState([]);
+  // [추가] 청소 서비스 설명 데이터 상태
+  const [cleaningDescriptions, setCleaningDescriptions] = useState({}); 
   const [loading, setLoading] = useState(true);
 
-  // 2. Firestore에서 모든 홈 페이지 데이터를 가져오는 useEffect
+  // Firestore에서 모든 홈 페이지 데이터를 가져오는 useEffect
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -32,7 +34,7 @@ export default function Home() {
 
       try {
         // Promise.all을 사용하여 여러 데이터를 병렬로 가져옵니다.
-        const [introsSnapshot, adsSnapshot, faqSnapshot, reviewsSnapshot] = await Promise.all([
+        const [introsSnapshot, adsSnapshot, faqSnapshot, reviewsSnapshot, cleaningOptionsDoc] = await Promise.all([
           // 업체소개 (메인 슬라이더)
           getDocs(query(
             collection(db, "companyIntroductions"),
@@ -48,41 +50,42 @@ export default function Home() {
           // FAQ (고객 지원)
           getDocs(query(collection(db, "companyNotices"), orderBy("createdAt", "desc"))),
           // 리뷰 데이터: 최신순으로 5개만 가져오기
-          getDocs(query(collection(db, "reviews"), where("blind", "!=", true), orderBy("createdAt", "desc"), limit(5)))
+          getDocs(query(collection(db, "reviews"), where("blind", "!=", true), orderBy("createdAt", "desc"), limit(5))),
+          // [추가] 청소 옵션 데이터 가져오기
+          getDoc(doc(db, "settings", "cleaningOptions")) 
         ]);
 
         // 메인 슬라이더 데이터 처리
         const introImages = introsSnapshot.docs
-            .filter(doc => doc.data().endDate >= now)
-            .map(doc => ({
-                src: doc.data().imageUrl,
-                alt: doc.data().name || '소개 이미지',
-            }));
+          .filter(doc => doc.data().endDate >= now)
+          .map(doc => ({
+            src: doc.data().imageUrl,
+            alt: doc.data().name || '소개 이미지',
+          }));
         setSliderImages(introImages);
 
         // 이벤트 슬라이더 데이터 처리
         const adImages = adsSnapshot.docs
-            .filter(doc => doc.data().endDate >= now)
-            .map(doc => ({
-                src: doc.data().imageUrl,
-                alt: doc.data().name || '이벤트 이미지',
-            }));
+          .filter(doc => doc.data().endDate >= now)
+          .map(doc => ({
+            src: doc.data().imageUrl,
+            alt: doc.data().name || '이벤트 이미지',
+          }));
         setEventImages(adImages);
         
         // 리뷰 데이터 처리
         const fetchedReviews = reviewsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            // [수정] blob: URL을 필터링하여 유효한 URL만 전달합니다.
-            const validImages = (data.imageUrls || []).filter(url => typeof url === 'string' && url.startsWith('https'));
-            
-            return {
-                id: doc.id,
-                location: data.userName,
-                serviceType: data.serviceType,
-                rating: data.rating || 0,
-                text: data.content,
-                images: validImages // 유효한 이미지 URL 배열만 전달
-            }
+          const data = doc.data();
+          const validImages = (data.imageUrls || []).filter(url => typeof url === 'string' && url.startsWith('https'));
+          
+          return {
+            id: doc.id,
+            location: data.userName,
+            serviceType: data.serviceType,
+            rating: data.rating || 0,
+            text: data.content,
+            images: validImages 
+          }
         });
         setReviews(fetchedReviews);
 
@@ -93,6 +96,13 @@ export default function Home() {
           content: doc.data().content || '내용 없음'
         }));
         setFaqData(faqs);
+
+        // [추가] 청소 옵션 설명 데이터 처리
+        if (cleaningOptionsDoc.exists()) {
+          setCleaningDescriptions(cleaningOptionsDoc.data().descriptions || {});
+        } else {
+          console.log("Cleaning options document does not exist.");
+        }
 
       } catch (error) {
         console.error("Error fetching homepage data from Firestore: ", error);
@@ -108,14 +118,16 @@ export default function Home() {
     router.push(`/apply-cleaning?serviceType=${encodeURIComponent(serviceTitle)}`);
   };
 
-  //#region 정적 데이터 (서비스 카드)
+  // [수정] 서비스 카드 데이터를 동적으로 생성
   const cardData = [
-    { title: "신축 입주 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-3.png", imageAlt: "신축 입주 청소", backgroundColor: "#2D61E3" },
-    { title: "이사 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-4.png", imageAlt: "이사 청소", backgroundColor: "#2DA3E3" },
-    { title: "준공 리모델링 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-1.png", imageAlt: "준공 리모델링 청소", backgroundColor: "#65D69F" },
-    { title: "상가&사무실 청소", description: "설명이 들어갑니다", imageUrl: "/images/Icons-2.png", imageAlt: "상가&사무실 청소", backgroundColor: "#8957E1" },
-  ];
-  //#endregion
+    { key: 'newConstruction', title: "신축 입주 청소", imageUrl: "/images/Icons-3.png", imageAlt: "신축 입주 청소", backgroundColor: "#2D61E3" },
+    { key: 'moveIn', title: "이사 청소", imageUrl: "/images/Icons-4.png", imageAlt: "이사 청소", backgroundColor: "#2DA3E3" },
+    { key: 'remodeling', title: "준공 리모델링 청소", imageUrl: "/images/Icons-1.png", imageAlt: "준공 리모델링 청소", backgroundColor: "#65D69F" },
+    { key: 'commercial', title: "상가&사무실 청소", imageUrl: "/images/Icons-2.png", imageAlt: "상가&사무실 청소", backgroundColor: "#8957E1" },
+  ].map(card => ({
+      ...card,
+      description: cleaningDescriptions[card.key] || '설명을 불러오는 중입니다...' // Firestore에서 가져온 설명으로 교체
+  }));
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fff', padding: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '600px', margin: '0 auto' }}>
@@ -145,11 +157,9 @@ export default function Home() {
         {loading ? <p>로딩 중...</p> : <ImageSlider images={eventImages} sliderHeight="150px" autoPlayDefault={true} />}
       </div>
 
-      {/* [수정] 리뷰 섹션 */}
       <div style={{ width: '100%', marginTop: '2rem', paddingBottom: '1rem' }}>
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>리뷰</h2>
-          {/* [추가] 전체보기 버튼 */}
           <span 
             onClick={() => router.push('/reviews')} 
             className={styles.viewAllLink}
@@ -157,7 +167,6 @@ export default function Home() {
             전체보기 ›
           </span>
         </div>
-        {/* ReviewSlider에 동적 데이터 전달 */}
         {loading ? <p>리뷰 로딩 중...</p> : <ReviewSlider reviews={reviews}/>}
       </div>
 

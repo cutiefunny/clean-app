@@ -70,7 +70,7 @@ export default function ApplyCleaningForm() {
         case 3:
           return !!formData.buildingType && Object.keys(formData.siteConditions || {}).length > 0;
         case 4:
-          return !!formData.supplyArea && formData.roomCount >= 0 && formData.bathroomCount >= 0 && formData.verandaCount >= 0 && !!formData.spaceStructureType;
+          return !!formData.supplyArea && formData.roomCount >= 1 && formData.bathroomCount >= 0 && formData.verandaCount >= 0;
         case 5:
           return !!formData.userName && !!formData.userPhoneNumber && /^\d{10,11}$/.test(formData.userPhoneNumber.replace(/-/g, '')) && !!formData.otpVerified;
         default:

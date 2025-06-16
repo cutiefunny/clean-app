@@ -2,9 +2,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
+import { doc, getDoc } from 'firebase/firestore'; // Firestore 함수 임포트
 import styles from './ApplyCleaning.module.css'; // 메인 CSS 모듈 공유
 
-// 수량 입력 컴포넌트 (이전과 동일하게 사용 가능, min 기본값을 0으로 변경)
+// 수량 입력 컴포넌트
 const QuantityInput = ({ label, value, onDecrease, onIncrease, min = 0 }) => {
   return (
     <div className={styles.quantityInputGroup}>
@@ -18,21 +20,45 @@ const QuantityInput = ({ label, value, onDecrease, onIncrease, min = 0 }) => {
   );
 };
 
-const supplyAreaOptions = [
-  "9평 이하", "10평대 (10~19평)", "20평대 (20~29평)", "30평대 (30~39평)", "40평 이상", "잘 모르겠어요"
-];
-
+// 주거 공간 형태는 정적 데이터로 유지
 const spaceStructureOptions = [
   "베란다 확장형", "비확장형", "복층형"
 ];
 
 export default function Step4Space({ formData, updateFormData }) {
+  // Firestore에서 가져온 옵션 상태
+  const [flatSizesOptions, setFlatSizesOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  // 사용자 입력 값 상태
   const [supplyArea, setSupplyArea] = useState(formData.supplyArea || '');
   const [roomCount, setRoomCount] = useState(formData.roomCount || 0);
   const [bathroomCount, setBathroomCount] = useState(formData.bathroomCount || 0);
   const [verandaCount, setVerandaCount] = useState(formData.verandaCount || 0);
   const [spaceStructureType, setSpaceStructureType] = useState(formData.spaceStructureType || '');
 
+  // Firestore에서 평형 옵션 데이터 가져오기
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        // Firestore 문서 경로를 'appConfig'로 수정합니다.
+        const docRef = doc(db, 'appConfig', 'cleaningOptions');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setFlatSizesOptions(docSnap.data().flatSizes || []);
+        } else {
+          console.error("Cleaning options document not found!");
+          setFlatSizesOptions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching flat size options:", error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   // 로컬 상태 변경 시 부모의 formData 업데이트
   useEffect(() => {
@@ -56,55 +82,38 @@ export default function Step4Space({ formData, updateFormData }) {
     if (formData.spaceStructureType !== undefined && formData.spaceStructureType !== spaceStructureType) {
       setSpaceStructureType(formData.spaceStructureType);
     }
-    // 의존성 배열에서 로컬 상태 변수를 제거하여, prop 변경에만 반응하도록 합니다.
-    // 이렇게 하면 로컬 상태 변경이 이 useEffect를 다시 트리거하지 않습니다.
   }, [
     formData.supplyArea, formData.roomCount, formData.bathroomCount,
     formData.verandaCount, formData.spaceStructureType
   ]);
-
-
-  // 각 핸들러에서 로컬 상태 업데이트 후 즉시 updateFormData 호출
-  const handleSupplyAreaChange = (e) => {
-    const value = e.target.value;
-    setSupplyArea(value);
-    updateFormData({ supplyArea: value });
+  
+  // [수정] 주거 공간 형태 선택/해제 핸들러
+  const handleSpaceStructureChange = (type) => {
+    setSpaceStructureType(prevType => (prevType === type ? '' : type));
   };
 
-  const handleRoomCountChange = (newCount) => {
-    setRoomCount(newCount);
-    updateFormData({ roomCount: newCount });
-  };
-  const handleBathroomCountChange = (newCount) => {
-    setBathroomCount(newCount);
-    updateFormData({ bathroomCount: newCount });
-  };
-  const handleVerandaCountChange = (newCount) => {
-    setVerandaCount(newCount);
-    updateFormData({ verandaCount: newCount });
-  };
 
-  const handleSpaceStructureChange = (value) => {
-    setSpaceStructureType(value);
-    updateFormData({ spaceStructureType: value });
-  };
+  if (loadingOptions) {
+    return (
+        <div className={styles.stepContainer}>
+            <p>공간 정보를 불러오는 중입니다...</p>
+        </div>
+    );
+  }
 
   return (
     <div className={styles.stepContainer}>
-      {/* 스텝 제목은 ApplyCleaningForm에서 관리 (예: <h2 className={styles.stepTitle}>공간 정보</h2>) */}
-      {/* 여기서는 섹션 제목만 표시 */}
-
       <div className={styles.formGroup}>
         <label htmlFor="supplyArea" className={styles.label}>공급면적</label>
         <select
           id="supplyArea"
-          className={`${styles.selectField} ${styles.step1Select}`} // Step1의 select 스타일 재활용
+          className={`${styles.selectField} ${styles.step1Select}`}
           value={supplyArea}
-          onChange={handleSupplyAreaChange}
+          onChange={(e) => setSupplyArea(e.target.value)}
           required
         >
           <option value="">평형을 선택해주세요.</option>
-          {supplyAreaOptions.map(option => (
+          {flatSizesOptions.map(option => (
             <option key={option} value={option}>{option}</option>
           ))}
         </select>
@@ -115,14 +124,14 @@ export default function Step4Space({ formData, updateFormData }) {
         <QuantityInput
           label="방"
           value={roomCount}
-          onDecrease={() => setRoomCount(prev => Math.max(0, prev - 1))} // 최소 0
+          onDecrease={() => setRoomCount(prev => Math.max(0, prev - 1))}
           onIncrease={() => setRoomCount(prev => prev + 1)}
           min={0}
         />
         <QuantityInput
           label="화장실"
           value={bathroomCount}
-          onDecrease={() => setBathroomCount(prev => Math.max(0, prev - 1))} // 최소 0
+          onDecrease={() => setBathroomCount(prev => Math.max(0, prev - 1))}
           onIncrease={() => setBathroomCount(prev => prev + 1)}
           min={0}
         />
@@ -137,12 +146,13 @@ export default function Step4Space({ formData, updateFormData }) {
 
       <div className={styles.formGroup}>
         <label className={styles.label}>주거 공간의 형태</label>
-        <div className={styles.radioGroup}> {/* Step1의 시간 선택 버튼 스타일 재활용 */}
+        <div className={styles.radioGroup}>
           {spaceStructureOptions.map(type => (
             <button
               key={type}
               type="button"
               className={`${styles.radioLabelAsButton} ${spaceStructureType === type ? styles.radioLabelActive : ''}`}
+              // [수정] 새로운 핸들러 적용
               onClick={() => handleSpaceStructureChange(type)}
             >
               {type}
@@ -150,8 +160,6 @@ export default function Step4Space({ formData, updateFormData }) {
           ))}
         </div>
       </div>
-      {/* "추가 요청사항" textarea는 제거됨 */}
-      {/* "다음" 버튼은 ApplyCleaningForm.js에서 관리 */}
     </div>
   );
 }

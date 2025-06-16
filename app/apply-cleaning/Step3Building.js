@@ -2,88 +2,121 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
+import { doc, getDoc } from 'firebase/firestore'; // Firestore 함수 임포트
 import styles from './ApplyCleaning.module.css'; // 메인 CSS 모듈 공유
 
-const buildingTypeOptions = [
-  "아파트", "빌라", "오피스텔", "단독주택", "다가구/다세대", "상가", "사무실", "기타"
-];
-
-const siteConditionOptions = [
-  { id: 'vacant', label: '공실 상태입니다' },
-  { id: 'someItems', label: '일부 짐이 있는 상태입니다' },
-  { id: 'inBetweenCleaning', label: '당일 전 세입자 퇴거 후 이삿짐이 들어옵니다. (사이청소)' },
-  { id: 'allItemsResidential', label: '모든 짐이 있는 상태입니다. (거주청소)' },
-  { id: 'noElevator', label: '엘리베이터가 없습니다.' },
-  { id: 'noParking', label: '주차가 불가능합니다' },
-];
-
-// 객체 깊은 비교 함수 (간단한 예시, 더 복잡한 객체면 lodash.isEqual 등 사용)
-const  areObjectsEqual = (obj1, obj2) => {
-    if (!obj1 || !obj2) return obj1 === obj2; // null 또는 undefined 처리
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-    if (keys1.length !== keys2.length) return false;
-    for (let key of keys1) {
-        if (obj1[key] !== obj2[key]) return false;
-    }
-    return true;
+// 객체 깊은 비교 함수 (간단한 예시)
+const areObjectsEqual = (obj1, obj2) => {
+  if (!obj1 || !obj2) return obj1 === obj2;
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  if (keys1.length !== keys2.length) return false;
+  for (let key of keys1) {
+    if (obj1[key] !== obj2[key]) return false;
+  }
+  return true;
 };
 
 export default function Step3Building({ formData, updateFormData }) {
-  // 건물 형태 상태
-  const [buildingType, setBuildingType] = useState(formData.buildingType || '');
+  // Firestore에서 불러온 옵션들을 저장할 상태
+  const [buildingTypeOptions, setBuildingTypeOptions] = useState([]);
+  const [siteConditionOptions, setSiteConditionOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
 
-  // 당일 현장 상황 상태 (객체 형태로 각 옵션의 선택 여부 관리)
-  const [siteConditions, setSiteConditions] = useState(
-    formData.siteConditions || 
-    siteConditionOptions.reduce((acc, option) => {
-      acc[option.id] = false;
-      return acc;
-    }, {})
-  );
+  // 사용자가 선택한 값에 대한 상태
+  const [buildingType, setBuildingType] = useState(formData.buildingType || '');
+  const [siteConditions, setSiteConditions] = useState(formData.siteConditions || {});
+
+  // 컴포넌트 마운트 시 Firestore에서 옵션 데이터를 가져오는 useEffect
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const docRef = doc(db, 'settings', 'cleaningOptions');
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const fetchedBuildingTypes = data.buildingTypes || [];
+          const fetchedSiteConditions = data.siteConditions || [];
+
+          setBuildingTypeOptions(fetchedBuildingTypes);
+          
+          // Firestore의 문자열 배열을 체크박스에서 사용할 객체 배열로 변환
+          const formattedSiteOptions = fetchedSiteConditions.map(label => ({ id: label, label: label }));
+          setSiteConditionOptions(formattedSiteOptions);
+
+          // 불러온 옵션을 기반으로 siteConditions 상태 객체 초기화
+          const initialConditionsState = formattedSiteOptions.reduce((acc, option) => {
+            // 부모로부터 받은 formData에 기존 선택값이 있으면 유지
+            acc[option.id] = formData.siteConditions?.[option.id] || false;
+            return acc;
+          }, {});
+          setSiteConditions(initialConditionsState);
+          
+        } else {
+          console.error("Cleaning options document not found!");
+          // 에러 발생 시 빈 배열로 설정
+          setBuildingTypeOptions([]);
+          setSiteConditionOptions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching cleaning options:", error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 마운트 시 한 번만 실행
 
   // 로컬 상태 변경 시 부모의 formData 업데이트
   useEffect(() => {
-    updateFormData({ buildingType, siteConditions });
-  }, [buildingType, siteConditions, updateFormData]);
-
-  // formData prop 변경 시 로컬 상태 동기화 (선택적, 외부 변경 대응)
+    // 옵션 로딩이 완료된 후에만 부모 상태 업데이트
+    if (!loadingOptions) {
+      updateFormData({ buildingType, siteConditions });
+    }
+  }, [buildingType, siteConditions, updateFormData, loadingOptions]);
+  
+  // formData prop 변경 시 로컬 상태 동기화
   useEffect(() => {
-    // buildingType 동기화
     if (formData.buildingType !== undefined && formData.buildingType !== buildingType) {
       setBuildingType(formData.buildingType);
     }
-    // siteConditions 동기화 (객체 비교 필요)
     if (formData.siteConditions && !areObjectsEqual(formData.siteConditions, siteConditions)) {
       setSiteConditions(formData.siteConditions);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.buildingType, formData.siteConditions]);
-
 
   const handleBuildingTypeChange = (e) => {
     setBuildingType(e.target.value);
   };
 
   const handleSiteConditionChange = (conditionId) => {
-    setSiteConditions(prevConditions => {
-      const newConditions = {
-        ...prevConditions,
-        [conditionId]: !prevConditions[conditionId],
-      };
-      return newConditions;
-    });
+    setSiteConditions(prevConditions => ({
+      ...prevConditions,
+      [conditionId]: !prevConditions[conditionId],
+    }));
   };
+  
+  if (loadingOptions) {
+    return (
+        <div className={styles.stepContainer}>
+            <p>건물 정보를 불러오는 중입니다...</p>
+        </div>
+    );
+  }
 
   return (
     <div className={styles.stepContainer}>
-      {/* 스텝 제목은 ApplyCleaningForm.js의 stepProgressContainer에서 표시 */}
-      {/* <h2 className={styles.stepTitle}>건물 정보</h2> */} {/* 필요하다면 유지 */}
-
       <div className={styles.formGroup}>
         <label htmlFor="buildingType" className={styles.label}>건물 형태</label>
         <select
           id="buildingType"
-          className={`${styles.selectField} ${styles.step1Select}`} // step1Select 스타일 재활용 가능
+          className={`${styles.selectField} ${styles.step1Select}`}
           value={buildingType}
           onChange={handleBuildingTypeChange}
           required
@@ -106,13 +139,12 @@ export default function Step3Building({ formData, updateFormData }) {
                 onChange={() => handleSiteConditionChange(option.id)}
                 className={styles.checkboxInput}
               />
-              <span className={styles.checkboxCustom}></span> {/* 커스텀 체크박스 UI */}
+              <span className={styles.checkboxCustom}></span>
               {option.label}
             </label>
           ))}
         </div>
       </div>
-      {/* "다음" 버튼은 ApplyCleaningForm.js에서 관리하므로 여기서 제거 */}
     </div>
   );
 }
