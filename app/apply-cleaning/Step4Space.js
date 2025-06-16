@@ -42,8 +42,7 @@ export default function Step4Space({ formData, updateFormData }) {
     const fetchOptions = async () => {
       setLoadingOptions(true);
       try {
-        // Firestore 문서 경로를 'appConfig'로 수정합니다.
-        const docRef = doc(db, 'appConfig', 'cleaningOptions');
+        const docRef = doc(db, 'settings', 'cleaningOptions');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setFlatSizesOptions(docSnap.data().flatSizes || []);
