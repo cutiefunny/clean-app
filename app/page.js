@@ -57,7 +57,11 @@ export default function Home() {
 
         // 메인 슬라이더 데이터 처리
         const introImages = introsSnapshot.docs
-          .filter(doc => doc.data().endDate >= now)
+          .filter(doc => {
+            const data = doc.data();
+            // endDate가 Timestamp 객체인지 확인하고, 그렇다면 .toMillis() 또는 .toDate()로 변환 후 비교
+            return data.endDate && data.endDate instanceof Timestamp && data.endDate.toMillis() >= now.toMillis();
+          })
           .map(doc => ({
             src: doc.data().imageUrl,
             alt: doc.data().name || '소개 이미지',
@@ -66,7 +70,11 @@ export default function Home() {
 
         // 이벤트 슬라이더 데이터 처리
         const adImages = adsSnapshot.docs
-          .filter(doc => doc.data().endDate >= now)
+          .filter(doc => {
+            const data = doc.data();
+            // endDate가 Timestamp 객체인지 확인하고, 그렇다면 .toMillis() 또는 .toDate()로 변환 후 비교
+            return data.endDate && data.endDate instanceof Timestamp && data.endDate.toMillis() >= now.toMillis();
+          })
           .map(doc => ({
             src: doc.data().imageUrl,
             alt: doc.data().name || '이벤트 이미지',
