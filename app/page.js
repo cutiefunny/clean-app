@@ -3,8 +3,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
-import { collection, getDocs, doc, getDoc, query, where, Timestamp, orderBy, limit } from 'firebase/firestore'; // doc, getDoc 추가
+//import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
+import { getFirestore, collection, getDocs, doc, getDoc, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
+import { app } from '@/lib/firebase/clientApp';
 
 import ImageSlider from '@/components/ImageSlider';
 import CustomizableCard from '@/components/CustomizableCard';
@@ -16,6 +17,7 @@ import Accordion from '@/components/Accordion';
 
 export default function Home() {
   const router = useRouter();
+  const db = getFirestore(app);
 
   // Firestore에서 가져올 데이터에 대한 상태 변수 선언
   const [sliderImages, setSliderImages] = useState([]);
