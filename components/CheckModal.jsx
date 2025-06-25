@@ -1,9 +1,9 @@
-// /components/CheckModal.js (reCAPTCHA 제거 및 롤백)
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import styles from './CheckModal.module.css';
-import useSmsVerification from '@/hooks/useSmsVerification';
+// [수정] 기존 useSmsVerification 훅 대신 useKakaoTalkSend 훅을 사용
+import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
 import { useModal } from '@/contexts/ModalContext';
 
 // [제거] Firebase Auth 관련 모듈은 더 이상 필요 없습니다.
@@ -16,15 +16,12 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
   const [verificationInput, setVerificationInput] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [componentError, setComponentError] = useState('');
-
-  const { sendVerificationCode, loading, error: apiError } = useSmsVerification();
   const [sentCodeFromServer, setSentCodeFromServer] = useState('');
   
   const { showAlert } = useModal();
   
-  // [제거] reCAPTCHA 및 Firebase Auth 관련 상태/ref 제거
-  // const recaptchaContainerRef = useRef(null);
-  // const [auth, setAuth] = useState(null);
+  // [수정] useKakaoTalkSend 훅 사용
+  const { sendKakaoTalk, loading, error: apiError } = useKakaoTalkSend();
 
   useEffect(() => {
     // 모달이 닫힐 때 모든 상태를 초기화합니다.
@@ -66,17 +63,28 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
         return;
       }
       
-      // 커스텀 훅을 사용한 SMS 발송
-      const result = await sendVerificationCode(phoneNumber);
+      // [수정] 6자리 랜덤 인증번호 생성
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const templateId = 'KA01TP221027002252645FPwAcO9SguY'; // 요청하신 알림톡 템플릿 ID
+      const templateVariables = {
+        '#{인증번호}': verificationCode,
+      };
+
+      // [수정] 커스텀 훅을 사용한 알림톡 발송
+      const result = await sendKakaoTalk(phoneNumber, templateId, templateVariables);
       
       if (result && result.success) {
-        showAlert('인증번호가 발송되었습니다.');
+        showAlert('인증번호가 카카오 알림톡으로 발송되었습니다.');
         setIsCodeSent(true);
-        setSentCodeFromServer(result.verificationCode);
+        // [수정] 생성된 인증번호를 상태에 저장
+        setSentCodeFromServer(verificationCode);
+      } else {
+        // useKakaoTalkSend 훅에서 이미 error 상태를 관리하지만, 추가적인 에러 처리를 위해 확인
+        setComponentError(apiError || '알림톡 발송에 실패했습니다.');
       }
       
     } catch (err) {
-      console.error("Error during Firestore query or SMS sending:", err);
+      console.error("Error during Firestore query or KakaoTalk sending:", err);
       setComponentError('인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
   };
@@ -89,7 +97,7 @@ export default function CheckModal({ isOpen, onClose, onVerified }) {
     setComponentError('');
 
     // [수정] 입력된 인증번호와 서버에서 받은 인증번호를 직접 비교
-    if (verificationInput === sentCodeFromServer || verificationInput === '123456') { // 테스트용 코드
+    if (verificationInput === sentCodeFromServer) { // 테스트용 코드
       showAlert("본인인증에 성공했습니다.");
       
       const userAuthData = {
