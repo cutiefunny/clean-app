@@ -9,6 +9,10 @@ import { doc, getDoc, Timestamp, updateDoc, serverTimestamp } from 'firebase/fir
 import { db, auth } from '@/lib/firebase/clientApp';
 import styles from '../../../board.module.css'; // 경로 확인
 import CompanySelectModal from '@/components/admin/CompanySelectModal';
+import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
+
+// [추가] 관리자 알림톡 템플릿 ID
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250619092249838Moxlcsddycx';
 
 const COLLECTION_NAME = "requests";
 
@@ -23,6 +27,10 @@ export default function RequestDetailPage() {
   const [isEditing, setIsEditing] = useState(false); // 수정 모드 상태
   const [formData, setFormData] = useState({}); // 수정용 폼 데이터 상태
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+
+  // useKakaoTalkSend 훅 사용
+      const { sendKakaoTalk, loading: kakaoLoading, error: kakaoError } = useKakaoTalkSend();
+      const [sentCodeFromServer, setSentCodeFromServer] = useState('');
 
   const fetchRequestDetail = useCallback(async () => {
     // ... (기존 fetchRequestDetail 로직은 동일) ...
@@ -110,7 +118,24 @@ export default function RequestDetailPage() {
       });
 
       const companyNames = selectedCompanies.map(c => c.name).join(', ');
+
+      //알림톡 발송
+      const templateVariables = {
+      '#{홍길동}': requestDetail.applicantName, // 신청자 이름
+      };
+
+      const phoneNumber = requestDetail.applicantContact; // 신청자의 연락처
+        const result = await sendKakaoTalk(phoneNumber, ALIMTALK_TEMPLATE_ID, templateVariables);
+    
+        if (result && result.success) {
+          console.log('알림톡 발송 성공:', result);
+        } else {
+          console.error('알림톡 발송 실패:', result);
+        }
+
+
       alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
+      
       setIsCompanyModalOpen(false); // 모달 닫기
       fetchRequestDetail(); // 변경된 데이터 다시 불러오기
     } catch (err) {

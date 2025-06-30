@@ -6,6 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './ApplyCleaning.module.css';
 import Header2 from '@/components/Header2';
 import { useModal } from '@/contexts/ModalContext';
+import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
+
+// [추가] 관리자 알림톡 템플릿 ID
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250629092101634NzEPQ4lHXYA';
 
 // Firestore 모듈 및 db 객체 임포트
 import { db } from '@/lib/firebase/clientApp';
@@ -23,6 +27,10 @@ export default function ApplyCleaningForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showAlert } = useModal();
+
+  // useKakaoTalkSend 훅 사용
+    const { sendKakaoTalk, loading: kakaoLoading, error: kakaoError } = useKakaoTalkSend();
+    const [sentCodeFromServer, setSentCodeFromServer] = useState('');
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false); // 제출 로딩 상태 추가
@@ -128,6 +136,16 @@ export default function ApplyCleaningForm() {
         console.log("Document written with ID: ", docRef.id);
 
         showAlert("견적 비교 신청이 성공적으로 완료되었습니다.");
+
+        const phoneNumber = process.env.SOLAPI_SENDER_KEY || '01023011798'; // 수신번호는 발신자 키로 설정
+        const result = await sendKakaoTalk(phoneNumber, ALIMTALK_TEMPLATE_ID);
+    
+        if (result && result.success) {
+          console.log('알림톡 발송 성공:', result);
+        } else {
+          console.error('알림톡 발송 실패:', result);
+        }
+
         router.push('/'); // 성공 후 홈으로 이동
 
     } catch (error) {

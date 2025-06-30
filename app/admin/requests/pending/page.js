@@ -11,6 +11,10 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useAuth } from '../../../context/AuthContext';
 import CompanySelectModal from '@/components/admin/CompanySelectModal';
+import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
+
+// [추가] 관리자 알림톡 템플릿 ID
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250619092249838Moxlcsddycx';
 
 // 아이콘 SVG (필요시 사용)
 const SearchIconSvg = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
@@ -34,6 +38,10 @@ export default function PendingRequestsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  // useKakaoTalkSend 훅 사용
+        const { sendKakaoTalk, loading: kakaoLoading, error: kakaoError } = useKakaoTalkSend();
+        const [sentCodeFromServer, setSentCodeFromServer] = useState('');
 
   // 페이지네이션 상태 (이전과 동일)
   const [currentPage, setCurrentPage] = useState(1);
@@ -295,6 +303,8 @@ export default function PendingRequestsPage() {
 
       // 배치 작업 실행
       await batch.commit();
+
+      //알림톡 발송
 
       const companyNames = selectedCompanies.map(c => c.name).join(', ');
       alert(`${selectedIds.length}건의 신청이 '${companyNames}'으로 일괄 변경되었습니다.`);
