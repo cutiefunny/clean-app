@@ -68,3 +68,13 @@
     color: #555;
     white-space: pre-line;
 }
+
+.accordionContent .contentLink {
+    color: #007bff; /* 링크 색상 */
+    text-decoration: underline; /* 밑줄 */
+    cursor: pointer;
+}
+
+.accordionContent .contentLink:hover {
+    color: #0056b3; /* 호버 시 색상 변경 */
+}

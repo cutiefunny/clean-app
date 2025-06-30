@@ -23,7 +23,7 @@ export default function FaqPage() {
       try {
         // 'companyNotices' 컬렉션에서 'createdAt' 필드를 기준으로 내림차순 정렬하여 데이터를 가져옵니다.
         // FAQ 항목을 구분하는 별도의 필드(예: type: 'faq')가 있다면 where 조건을 추가할 수 있습니다.
-        const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'asc'));
+        const q = query(collection(db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         
         const faqs = querySnapshot.docs.map(doc => ({
