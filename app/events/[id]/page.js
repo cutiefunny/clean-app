@@ -8,6 +8,10 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore'; // Firestore 모듈 추가
 import { db } from '@/lib/firebase/clientApp'; // Firebase 설정 임포트
 
+// React Markdown 임포트
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // GitHub Flavored Markdown (줄바꿈, 테이블 등) 지원 플러그인
+
 import styles from '../EventPage.module.css';
 import Header2 from '@/components/Header2';
 
@@ -57,21 +61,6 @@ export default function EventDetailPage() {
         }
     }, [eventId]); // eventId가 변경될 때마다 실행
 
-    // description 내용을 줄바꿈 처리하여 렌더링하는 헬퍼 함수
-    const renderDescription = (descriptionText) => {
-        if (!descriptionText) return null;
-
-        // 텍스트를 줄바꿈 문자(\n) 기준으로 분할하고, 각 줄 사이에 <br />을 삽입합니다.
-        // React.Fragment를 사용하여 각 줄과 <br />이 형제 요소로 렌더링되도록 합니다.
-        return descriptionText.split('\n').map((line, index, array) => (
-            <React.Fragment key={index}>
-                {line}
-                {/* 마지막 줄이 아니면 <br /> 태그를 추가합니다. */}
-                {index < array.length - 1 && <br />}
-            </React.Fragment>
-        ));
-    };
-
     // 로딩 상태 UI
     if (loading) {
         return (
@@ -109,11 +98,29 @@ export default function EventDetailPage() {
                         <img src={event.imgSrc} alt={event.title} className={styles.eventImage} />
                     </div>
                 )}
-                {/* description에 줄바꿈 적용 */}
-                <p className={styles.eventDetailDescription}>
-                    {renderDescription(event.description)}
-                </p>
+                {/* description에 마크다운 렌더링 적용 */}
+                {/* <p> 태그 대신 <div>를 사용하는 것이 더 유연합니다. */}
+                <div className={styles.eventDetailDescription}>
+                    <ReactMarkdown
+                        // remarkGfm 플러그인을 사용하여 GitHub Flavored Markdown (줄바꿈 포함)을 처리합니다.
+                        remarkPlugins={[remarkGfm]}
+                        // 이미지가 100% 너비를 차지하도록 스타일을 적용합니다.
+                        components={{
+                            img: ({ node, ...props }) => <img style={{ maxWidth: '100%', height: 'auto' }} {...props} />,
+                            // p 태그에 대한 스타일을 적용하려면 다음과 같이 설정할 수 있습니다.
+                            p: ({ node, ...props }) => <p className={styles.descriptionParagraph} {...props} />,
+                            a: ({ node, ...props }) => (
+                                <a {...props} target="_blank" rel="noopener noreferrer" className={styles.eventLink}>
+                                    {props.children}
+                                </a>
+                            ),
+                        }}
+                    >
+                        {event.description}
+                    </ReactMarkdown>
+                </div>
             </main>
         </div>
     );
 }
+
