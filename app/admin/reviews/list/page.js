@@ -134,9 +134,10 @@ export default function ReviewListPage() {
         const requestData = requestsMap.get(review.requestId) || {};
         return {
           ...review,
-          buildingType: requestData.buildingType || '정보 없음',
-          areaSize: requestData.areaSize || '정보 없음',
-          usageDate: requestData.requestDate?.toDate() || null,
+          buildingType: requestData.buildingType || reviewsData[0]?.buildingType || '정보 없음',
+          userName: review.userName || '관리자',
+          areaSize: requestData.areaSize || reviewsData[0]?.areaSize || '정보 없음',
+          usageDate: requestData.requestDate?.toDate() || review.usageDate?.toDate() || null,
         };
       });
 
@@ -211,6 +212,16 @@ export default function ReviewListPage() {
           <select id="sortOption" value={sortOption} onChange={(e) => { setSortOption(e.target.value); setCurrentPage(1);}} className={styles.filterDropdown}>
             {SORT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
+        </div>
+        {/* [추가] '작성하기' 버튼 */}
+        {/* 관리자 페이지에서 리뷰를 작성하려면 특정 신청 ID가 필요합니다. 
+          따라서 샘플 ID를 사용하도록 설정했습니다.
+          실제 사용 시에는 신청 목록에서 리뷰를 작성할 신청을 선택하는 플로우를 구현해야 합니다.
+        */}
+        <div style={{ marginLeft: '15px' }}>
+            <button onClick={() => router.push('/admin/reviews/list/new')} className={styles.button} style={{ minWidth: '100px' }}>
+                작성하기
+            </button>
         </div>
       </div>
 

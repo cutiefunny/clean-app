@@ -63,10 +63,10 @@ export default function ReviewListPage() {
                     id: review.id,
                     requestId: review.requestId,
                     authorName: review.userName,
-                    serviceType: requestData.buildingType || '정보 없음',
-                    area: requestData.areaSize ? `${requestData.areaSize}평` : '정보 없음',
+                    serviceType: requestData.buildingType || review.buildingType || '정보 없음',
+                    area: requestData.areaSize || review.areaSize || '정보 없음',
                     rating: review.rating,
-                    usageDate: requestData.requestDate?.toDate().toLocaleDateString('ko-KR') || '정보 없음',
+                    usageDate: requestData.requestDate?.toDate().toLocaleDateString('ko-KR') || review.usageDate?.toDate().toLocaleDateString('ko-KR') || '정보 없음',
                     text: review.content,
                     imageUrls: review.imageUrls || [],
                     createdAt: review.createdAt?.toDate().toISOString() || new Date().toISOString()

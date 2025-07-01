@@ -74,6 +74,14 @@ export default function ReviewDetailPage() {
               areaSize: requestData.areaSize || '정보 없음',
             };
           }
+        }else { // 리뷰에 직접적인 사용 날짜, 주소, 건물형태, 평수 정보가 있는 경우(수동 입력된 리뷰)
+          combinedData = {
+            ...combinedData,
+            usageDate: reviewData.usageDate?.toDate ? reviewData.usageDate.toDate() : null,
+            address: reviewData.address || '정보 없음',
+            buildingType: reviewData.buildingType || '정보 없음',
+            areaSize: reviewData.areaSize || '정보 없음',
+          };
         }
         setReview(combinedData);
       } else {
