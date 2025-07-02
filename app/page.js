@@ -158,9 +158,15 @@ export default function Home() {
         ))}
       </div>
 
-      <div style={{ width: '100%'}} onClick={() => window.location.href = '/events'}>
+      <div style={{ width: '100%' }} onClick={() => window.location.href = '/events'}>
         <div className='container' style={{ width: '95%', margin: '0.3rem auto', paddingLeft: '0.5rem', paddingBottom: '0.7rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className={styles.title}>이벤트</h2>
+          <span 
+            onClick={() => router.push('/events')} 
+            className={styles.viewAllLink}
+          >
+            전체보기 ›
+          </span>
         </div>
         {loading ? <p>로딩 중...</p> : <ImageSlider images={eventImages} sliderHeight="150px" autoPlayDefault={true} />}
       </div>
