@@ -64,7 +64,7 @@ const PointGrantModal = ({ company, onClose, onGrant }) => {
         
         <div className={styles.formGroup}>
           <label className={styles.label}>작업 선택:</label>
-          <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
             <label>
               <input
                 type="radio"
@@ -88,7 +88,7 @@ const PointGrantModal = ({ company, onClose, onGrant }) => {
           </div>
         </div>
 
-        <div className={styles.formGroup}>
+        <div className={styles.formGroup} style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
           <label className={styles.label}>{transactionType === 'grant' ? '지급' : '회수'} 포인트:</label>
           <input
             type="number"
@@ -99,7 +99,7 @@ const PointGrantModal = ({ company, onClose, onGrant }) => {
             disabled={isProcessing}
           />
         </div>
-        <div className={styles.formGroup}>
+        <div className={styles.formGroup} style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
           <label className={styles.label}>내용:</label>
           <input
             type="text"
@@ -161,7 +161,7 @@ const BatchPointGrantModal = ({ onClose, onGrant, selectedCount }) => {
         
         <div className={styles.formGroup}>
           <label className={styles.label}>작업 선택:</label>
-          <div style={{ display: 'flex', gap: '15px', marginTop: '5px' }}>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
             <label>
               <input
                 type="radio"
@@ -185,7 +185,7 @@ const BatchPointGrantModal = ({ onClose, onGrant, selectedCount }) => {
           </div>
         </div>
 
-        <div className={styles.formGroup}>
+        <div className={styles.formGroup} style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
           <label className={styles.label}>{transactionType === 'grant' ? '지급' : '회수'} 포인트:</label>
           <input
             type="number"
@@ -197,7 +197,7 @@ const BatchPointGrantModal = ({ onClose, onGrant, selectedCount }) => {
           />
         </div>
         
-        <div className={styles.formGroup}>
+        <div className={styles.formGroup} style={{ display: 'flex', gap: '15px', marginTop: '5px', marginBottom: '10px' }}>
           <label className={styles.label}>내용:</label>
           <input
             type="text"
