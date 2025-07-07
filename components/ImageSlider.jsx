@@ -14,12 +14,12 @@ const PlayIcon = () => (
 
 const PauseIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{width: '20px', height: '20px'}}>
-    <path fillRule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0ZM9.25 6.75a.75.75 0 00-1.5 0v6.5a.75.75 0 001.5 0v-6.5Zm2.5 0a.75.75 0 00-1.5 0v6.5a.75.75 0 001.5 0v-6.5Z" clipRule="evenodd" />
+    <path fillRule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0ZM9.25 6.75a.75.75 0 00-1.5 0v6.5a.75.75 0 001.5 0v-6.5Z" clipRule="evenodd" />
   </svg>
 );
 
 
-const ImageSlider = ({ images = [], sliderHeight = "256px", autoPlayDefault = true }) => {
+const ImageSlider = ({ images = [], sliderHeight = "256px", autoPlayDefault = true, isMobile = false }) => { // isMobile prop 추가
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoPlayDefault);
 
@@ -117,19 +117,22 @@ const ImageSlider = ({ images = [], sliderHeight = "256px", autoPlayDefault = tr
     transform: `translateX(calc(-${currentIndex * 100}% + ${currentTranslateX}px))`,
   };
 
+  // PC 모드일 때 가로세로 비율 유지를 위한 스타일
+  const sliderContainerStyle = {
+    overflow: 'hidden',
+    borderRadius: '15px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    position: 'relative',
+    cursor: 'grab', // 기본 커서 grab
+    touchAction: 'pan-y', // 수직 스크롤은 허용, 수평은 제어
+    ...(isMobile ? { height: sliderHeight } : { aspectRatio: '360 / 150' }), // 모바일 뷰포트 비율 (가로:360px, 세로:150px)
+  };
+
   return (
     <div style={{width: '90%', margin: 'auto', position: 'relative'}}> {/* group className은 Tailwind용이므로 제거하거나 유지 */}
       <div
         ref={sliderRef} // ref 할당
-        style={{
-          overflow: 'hidden',
-          height: sliderHeight,
-          borderRadius: '15px',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          position: 'relative',
-          cursor: 'grab', // 기본 커서 grab
-          touchAction: 'pan-y', // 수직 스크롤은 허용, 수평은 제어
-        }}
+        style={sliderContainerStyle} // 동적 스타일 적용
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

@@ -9,7 +9,8 @@ import { useModal } from '@/contexts/ModalContext';
 import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
 
 // [추가] 관리자 알림톡 템플릿 ID
-const ALIMTALK_TEMPLATE_ID = 'KA01TP250629092101634NzEPQ4lHXYA';
+const ADMIN_ALIMTALK_TEMPLATE_ID = 'KA01TP250629092101634NzEPQ4lHXYA';
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250619092249838Moxlcsddycx'; // 사용자 알림톡 템플릿 ID
 
 // Firestore 모듈 및 db 객체 임포트
 import { db } from '@/lib/firebase/clientApp';
@@ -137,13 +138,26 @@ export default function ApplyCleaningForm() {
 
         showAlert("견적 비교 신청이 성공적으로 완료되었습니다.");
 
-        const phoneNumber = process.env.SOLAPI_SENDER_KEY || '01023011798'; // 수신번호는 발신자 키로 설정
-        const result = await sendKakaoTalk(phoneNumber, ALIMTALK_TEMPLATE_ID);
-    
+        const adminNumber = process.env.SOLAPI_SENDER_KEY || '01023011798'; // 수신번호는 발신자 키로 설정
+        const result = await sendKakaoTalk(adminNumber, ADMIN_ALIMTALK_TEMPLATE_ID);
+
         if (result && result.success) {
-          console.log('알림톡 발송 성공:', result);
+          console.log('관리자 알림톡 발송 성공:', result);
         } else {
-          console.error('알림톡 발송 실패:', result);
+          console.error('관리자 알림톡 발송 실패:', result);
+        }
+
+        const userPhoneNumber = formData.userPhoneNumber.replace(/-/g, ''); // 하이픈 제거
+        const userMessageVariables = {
+          '#{홍길동}': formData.userName.trim()
+        };
+        // 사용자 알림톡 발송
+        const userResult = await sendKakaoTalk(userPhoneNumber, ALIMTALK_TEMPLATE_ID, userMessageVariables);
+        if (userResult && userResult.success) {
+          console.log('사용자 알림톡 발송 성공:', userResult);
+        } else {
+          console.error('사용자 알림톡 발송 실패:', userResult);
+          showAlert("알림톡 발송 중 오류가 발생했습니다. 다시 시도해주세요.");
         }
 
         router.push('/'); // 성공 후 홈으로 이동

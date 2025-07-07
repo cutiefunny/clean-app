@@ -189,6 +189,8 @@ export default function EditCleanerMemberPage() {
         operationalStatus: formData.operationalStatus ? '운영중' : '휴업',
         registrationStatus: formData.registrationStatus, // [추가] 저장할 데이터에 포함
         email: formData.email,
+        businessName: formData.businessName, // 필드 추가
+        field: formData.field, // 필드 추가
         address: formData.address,
         representativeName: formData.representativeName,
         contactPhone: formData.contactPhone,
@@ -255,11 +257,27 @@ export default function EditCleanerMemberPage() {
             </div>
             <div className={styles.formRow}>
                 <label className={styles.label}>상호명(매장명)</label>
-                <div className={styles.value}>{formData.businessName}</div>
+                <div className={styles.value}> {/* 이 부분을 input으로 변경 */}
+                    <input 
+                      type="text" 
+                      name="businessName" 
+                      value={formData.businessName} 
+                      onChange={handleChange} 
+                      className={styles.input} 
+                    />
+                </div>
             </div>
             <div className={styles.formRow}>
                 <label className={styles.label}>분야</label>
-                <div className={styles.value}>{formData.field}</div>
+                <div className={styles.value}> {/* 이 부분을 input으로 변경 */}
+                    <input 
+                      type="text" 
+                      name="field" 
+                      value={formData.field} 
+                      onChange={handleChange} 
+                      className={styles.input} 
+                    />
+                </div>
             </div>
             <div className={styles.formRow}>
                 <label className={styles.label}>주소</label>
@@ -300,7 +318,7 @@ export default function EditCleanerMemberPage() {
                 <button type="submit" className={styles.primaryButton} disabled={isSaving}>
                     {isSaving ? '저장 중...' : '저장'}
                 </button>
-                 <button type="button" onClick={() => router.back()} className={styles.secondaryButton} disabled={isSaving}>
+                <button type="button" onClick={() => router.back()} className={styles.secondaryButton} disabled={isSaving}>
                     목록
                 </button>
             </div>
