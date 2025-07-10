@@ -1,4 +1,4 @@
-// /components/ReviewSlider.js (slidesPerView 수정)
+// /components/ReviewSlider.js
 'use client';
 
 import React from 'react';
@@ -30,7 +30,7 @@ const ReviewCard = ({ review }) => {
       </div>
       <p className={styles.reviewText}>{review.text}</p>
       <div className={styles.reviewImages}>
-        {review.images.map((imgSrc, index) => (
+        {review.images.slice(0, 2).map((imgSrc, index) => ( // 이미지를 2개까지만 보여주도록 수정
           <div key={index} className={styles.reviewImageWrapper}>
             <Image
               src={imgSrc}
@@ -63,7 +63,7 @@ const ReviewSlider = ({ reviews }) => {
         // [수정] 한 번에 1.5개의 슬라이드를 보여주도록 설정
         slidesPerView={1.5}
         // [수정] 슬라이드 간의 간격 설정
-        spaceBetween={15} 
+        spaceBetween={15}
         loop={reviews.length > 2} // 루프는 슬라이드가 충분히 많을 때만 작동
         grabCursor={true}
       >
