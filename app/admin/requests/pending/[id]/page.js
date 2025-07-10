@@ -11,8 +11,8 @@ import styles from '../../../board.module.css'; // 경로 확인
 import CompanySelectModal from '@/components/admin/CompanySelectModal';
 import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
 
-// [추가] 관리자 알림톡 템플릿 ID
-const ALIMTALK_TEMPLATE_ID = 'KA01TP250619092249838Moxlcsddycx';
+// [추가] 입점업체 알림톡 템플릿 ID
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250710072933657OV5TaTz0LKo';
 
 const COLLECTION_NAME = "requests";
 
@@ -96,53 +96,69 @@ export default function RequestDetailPage() {
     setIsCompanyModalOpen(true);
   };
 
-  // [수정] 모달에서 다중 선택된 업체 목록을 처리하는 핸들러
+  // 모달에서 다중 선택된 업체 목록을 처리하는 핸들러
   const handleCompanySelected = async (selectedCompanies) => {
-    if (!selectedCompanies || selectedCompanies.length === 0) {
-      alert('업체를 하나 이상 선택해주세요.');
-      return;
-    }
+    if (!selectedCompanies || selectedCompanies.length === 0) {
+      alert('업체를 하나 이상 선택해주세요.');
+      return;
+    }
 
-    try {
-      const docRef = doc(db, COLLECTION_NAME, requestId);
-      
-      // 선택된 업체들의 정보를 {id, name} 형태의 배열로 가공
-      const assignedCompaniesData = selectedCompanies.map(c => ({
-        id: c.id,
-        name: c.name
-      }));
-      
-      await updateDoc(docRef, {
-        assignedCompanies: assignedCompaniesData, // 업체 배열 저장
-        status: '전송' // 상태 변경
-      });
+    try {
+      const docRef = doc(db, COLLECTION_NAME, requestId);
+       
+      // 선택된 업체들의 정보를 {id, name, contactPhone} 형태의 배열로 가공
+      const assignedCompaniesData = selectedCompanies.map(c => ({
+        id: c.id,
+        name: c.name,
+        contactPhone: c.contactPhone, // contactPhone 포함
+      }));
+       
+      await updateDoc(docRef, {
+        assignedCompanies: assignedCompaniesData, // 업체 배열 저장
+        status: '전송' // 상태 변경
+      });
 
-      const companyNames = selectedCompanies.map(c => c.name).join(', ');
+      const companyNames = selectedCompanies.map(c => c.name).join(', ');
 
-      //알림톡 발송
-      const templateVariables = {
-      '#{홍길동}': requestDetail.applicantName, // 신청자 이름
-      };
+      // 각 선택된 업체에 알림톡 발송
+      for (const company of selectedCompanies) {
+          if (company.contactPhone) {
+              const templateVariables = {
+                  '#{성함}': requestDetail.applicantName,
+                  '#{연락처}': requestDetail.applicantContact,
+                  '#{희망서비스}': requestDetail.field,
+                  '#{희망일}': formatDate(requestDetail.requestDate),
+                  '#{희망시간대}': requestDetail.requestTimeSlot,
+                  '#{지역}': requestDetail.address.split(' ')[0] || '', // 주소에서 지역만 추출 (예: '서울시 강남구' -> '서울시')
+                  '#{건물형태}': requestDetail.buildingType,
+                  '#{평수}': requestDetail.areaSize ? `${requestDetail.areaSize}평` : '',
+                  '#{주거구조}': requestDetail.spaceInfo,
+                  '#{문의사항}': requestDetail.inquiryNotes,
+              };
 
-      const phoneNumber = requestDetail.applicantContact; // 신청자의 연락처
-        const result = await sendKakaoTalk(phoneNumber, ALIMTALK_TEMPLATE_ID, templateVariables);
-    
-        if (result && result.success) {
-          console.log('알림톡 발송 성공:', result);
-        } else {
-          console.error('알림톡 발송 실패:', result);
-        }
+              console.log(`Sending KakaoTalk to ${company.name} (${company.contactPhone}) with template:`, templateVariables);
 
+              const result = await sendKakaoTalk(company.contactPhone, ALIMTALK_TEMPLATE_ID, templateVariables);
+              
+              if (result && result.success) {
+                  console.log(`알림톡 발송 성공: ${company.name}`, result);
+              } else {
+                  console.error(`알림톡 발송 실패: ${company.name}`, result);
+              }
+          } else {
+              console.warn(`업체 ${company.name}에 연락처 정보가 없습니다. 알림톡을 발송할 수 없습니다.`);
+          }
+      }
 
-      alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
-      
-      setIsCompanyModalOpen(false); // 모달 닫기
-      fetchRequestDetail(); // 변경된 데이터 다시 불러오기
-    } catch (err) {
-      console.error("Error updating company assignment: ", err);
-      alert('업체 배정 중 오류가 발생했습니다.');
-    }
-  };
+      alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
+       
+      setIsCompanyModalOpen(false); // 모달 닫기
+      fetchRequestDetail(); // 변경된 데이터 다시 불러오기
+    } catch (err) {
+      console.error("Error updating company assignment or sending KakaoTalk: ", err);
+      alert('업체 배정 중 오류가 발생했습니다.');
+    }
+  };
 
   const formatDate = (date, includeTime = false) => {
     // ... (기존 formatDate 로직은 동일) ...

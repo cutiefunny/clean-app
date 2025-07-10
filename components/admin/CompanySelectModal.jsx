@@ -1,4 +1,4 @@
-// /components/admin/CompanySelectModal.jsx (수정)
+// /components/admin/CompanySelectModal.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,7 +22,7 @@ export default function CompanySelectModal({ isOpen, onClose, onSelect }) {
       const fetchCompanies = async () => {
         setLoading(true);
         try {
-          // [수정] 'registrationStatus'가 '신청완료'인 업체만 가져오도록 where 조건 추가
+          // 'registrationStatus'가 '신청완료'인 업체만 가져오도록 where 조건 추가
           const cleanersQuery = query(
             collection(db, 'cleaners'),
             where("registrationStatus", "==", "신청완료"),
@@ -33,6 +33,7 @@ export default function CompanySelectModal({ isOpen, onClose, onSelect }) {
           const fetchedCompanies = querySnapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().businessName,
+            contactPhone: doc.data().contactPhone || '', // contactPhone 추가
           }));
           setAllCompanies(fetchedCompanies);
           setFilteredCompanies(fetchedCompanies);
