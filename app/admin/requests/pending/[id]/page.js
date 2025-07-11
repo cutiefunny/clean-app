@@ -129,7 +129,7 @@ export default function RequestDetailPage() {
                   '#{희망서비스}': requestDetail.field,
                   '#{희망일}': formatDate(requestDetail.requestDate),
                   '#{희망시간대}': requestDetail.requestTimeSlot,
-                  '#{지역}': requestDetail.address.split(' ')[0] || '', // 주소에서 지역만 추출 (예: '서울시 강남구' -> '서울시')
+                  '#{지역}': requestDetail.address,
                   '#{건물형태}': requestDetail.buildingType,
                   '#{평수}': requestDetail.areaSize ? `${requestDetail.areaSize}평` : '',
                   '#{주거구조}': requestDetail.spaceInfo,
