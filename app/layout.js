@@ -7,6 +7,9 @@ import { ModalProvider } from '@/contexts/ModalContext';
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
+      <head>
+        <meta name="naver-site-verification" content="59e2ea0050231cea4deef4e052fe323fa8e618bb" />
+      </head>
       <body>
         <DeviceDetector />
         <ModalProvider>
