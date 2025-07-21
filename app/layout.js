@@ -28,7 +28,7 @@ export const metadata = {
     default: "PICKQ",
     template: "PICKQ",
   },
-  description: "똑똑한 선택, 빠른 견적",
+  description: "전국 어디서든 우리 동네 청소 전문가와\n무료 견적 비교하고 비용 걱정은 줄이세요!\n만족도 높은 스마트한 청소, 픽큐에서 시작하세요.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -46,7 +46,7 @@ export const metadata = {
       default: "PICKQ",
       template: "PICKQ",
     },
-    description: "똑똑한 선택, 빠른 견적",
+    description: "전국 어디서든 우리 동네 청소 전문가와\n무료 견적 비교하고 비용 걱정은 줄이세요!\n만족도 높은 스마트한 청소, 픽큐에서 시작하세요.",
   }
 };
 

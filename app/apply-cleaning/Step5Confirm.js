@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase/clientApp';
 
 const MAX_INQUIRY_LENGTH = 1000;
 const OTP_TIMER_DURATION = 180; // 3분 = 180초
-const ALIMTALK_TEMPLATE_ID = 'KA01TP221027002252645FPwAcO9SguY';
+const ALIMTALK_TEMPLATE_ID = 'KA01TP250721014428407sdi2yaQSZ8h';
 // [추가] 가입 환영 알림톡 템플릿 ID
 const WELCOME_ALIMTALK_TEMPLATE_ID = 'KA01TP221025083117992xkz17KyvNbr';
 
@@ -109,35 +109,35 @@ export default function Step5Confirm({ formData, updateFormData }) {
       setIsVerified(true);
       showAlert('본인인증에 성공했습니다.');
       
-      // [추가] 본인인증 성공 시 Firestore에서 요청 내역 확인
-      try {
-        const cleanedPhoneNumber = phoneNumber.replace(/-/g, '');
-        const requestsRef = collection(db, 'requests');
-        const q = query(
-          requestsRef,
-          where('applicantName', '==', name.trim()),
-          where('applicantContact', '==', cleanedPhoneNumber)
-        );
-        const querySnapshot = await getDocs(q);
+      // [추가] 본인인증 성공 시 Firestore에서 요청 내역 확인 //보류
+      // try {
+      //   const cleanedPhoneNumber = phoneNumber.replace(/-/g, '');
+      //   const requestsRef = collection(db, 'requests');
+      //   const q = query(
+      //     requestsRef,
+      //     where('applicantName', '==', name.trim()),
+      //     where('applicantContact', '==', cleanedPhoneNumber)
+      //   );
+      //   const querySnapshot = await getDocs(q);
         
-        // [로직 추가] Firestore에 일치하는 요청 내역이 없는 경우에만 가입 환영 알림톡 발송
-        if (querySnapshot.empty) {
-          console.log('일치하는 요청 내역이 없습니다. 가입 환영 알림톡을 발송합니다.');
-          const welcomeMessageVariables = {
-            '#{홍길동}': name.trim(), // 템플릿 변수에 따라 수정
-            '#{url}': 'www.cleanapp.com', // 환영 메시지에 포함할 URL
-          };
-          const welcomeResult = await sendKakaoTalk(phoneNumber, WELCOME_ALIMTALK_TEMPLATE_ID, welcomeMessageVariables);
+      //   // [로직 추가] Firestore에 일치하는 요청 내역이 없는 경우에만 가입 환영 알림톡 발송
+      //   if (querySnapshot.empty) {
+      //     console.log('일치하는 요청 내역이 없습니다. 가입 환영 알림톡을 발송합니다.');
+      //     const welcomeMessageVariables = {
+      //       '#{홍길동}': name.trim(), // 템플릿 변수에 따라 수정
+      //       '#{url}': 'www.cleanapp.com', // 환영 메시지에 포함할 URL
+      //     };
+      //     const welcomeResult = await sendKakaoTalk(phoneNumber, WELCOME_ALIMTALK_TEMPLATE_ID, welcomeMessageVariables);
 
-          if (welcomeResult && welcomeResult.success) {
-            console.log('가입 환영 알림톡 발송 성공!');
-          } else {
-            console.error('가입 환영 알림톡 발송 실패:', welcomeResult);
-          }
-        }
-      } catch (error) {
-        console.error("Firestore 쿼리 또는 알림톡 발송 중 오류 발생:", error);
-      }
+      //     if (welcomeResult && welcomeResult.success) {
+      //       console.log('가입 환영 알림톡 발송 성공!');
+      //     } else {
+      //       console.error('가입 환영 알림톡 발송 실패:', welcomeResult);
+      //     }
+      //   }
+      // } catch (error) {
+      //   console.error("Firestore 쿼리 또는 알림톡 발송 중 오류 발생:", error);
+      // }
       
     } else {
       setOtpError('인증번호가 올바르지 않습니다.');
