@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, where } from 'firebase/firestore'; // where 임포트 추가
+import { collection, query, orderBy, getDocs, where, doc, getDoc as getSingleDoc } from 'firebase/firestore'; // getSingleDoc as alias 추가
 import { db } from '@/lib/firebase/clientApp';
 import styles from './CompanySelectModal.module.css';
 
@@ -22,10 +22,23 @@ export default function CompanySelectModal({ isOpen, onClose, onSelect }) {
       const fetchCompanies = async () => {
         setLoading(true);
         try {
-          // 'registrationStatus'가 '신청완료'인 업체만 가져오도록 where 조건 추가
+            // 1. settings/pointSettings 문서에서 pointsToApply 값 불러오기
+            const settingsDocRef = doc(db, 'settings', 'pointSettings');
+            const settingsDocSnap = await getSingleDoc(settingsDocRef); // 'getSingleDoc'으로 별칭 사용
+
+            let pointsToApply = 0;
+            if (settingsDocSnap.exists()) {
+                pointsToApply = settingsDocSnap.data().pointsToApply || 0;
+            } else {
+                console.warn("settings/pointSettings 문서가 존재하지 않습니다. 포인트 기준값은 0으로 설정됩니다.");
+                // 필요하다면 사용자에게 알림을 띄우는 등의 추가 처리를 할 수 있습니다.
+            }
+
+          // 'registrationStatus'가 '신청완료'이고 'currentPoints'가 pointsToApply보다 크거나 같은 업체만 가져오도록 where 조건 추가
           const cleanersQuery = query(
             collection(db, 'cleaners'),
             where("registrationStatus", "==", "신청완료"),
+            where("currentPoints", ">=", pointsToApply), // currentPoints가 pointsToApply보다 크거나 같으면 포함
             orderBy('businessName', 'asc')
           );
           
@@ -33,7 +46,7 @@ export default function CompanySelectModal({ isOpen, onClose, onSelect }) {
           const fetchedCompanies = querySnapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().businessName,
-            contactPhone: doc.data().contactPhone || '', // contactPhone 추가
+            contactPhone: doc.data().contactPhone || '',
           }));
           setAllCompanies(fetchedCompanies);
           setFilteredCompanies(fetchedCompanies);
@@ -49,7 +62,7 @@ export default function CompanySelectModal({ isOpen, onClose, onSelect }) {
       setSearchTerm('');
       setSelectedCompanies([]);
     }
-  }, [isOpen]);
+  }, [isOpen]); // isOpen이 변경될 때만 fetchCompanies 호출
 
   // 검색어에 따라 업체 목록을 필터링합니다.
   useEffect(() => {

@@ -1,11 +1,11 @@
-// /app/admin/requests/pending/[id]/page.jsx (수정 예시)
+// /app/admin/requests/pending/[id]/page.jsx
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 // Image 컴포넌트는 현재 사용되지 않지만, 만약 사진 필드가 있다면 필요
 // import Image from 'next/image';
-import { doc, getDoc, Timestamp, updateDoc, serverTimestamp } from 'firebase/firestore'; // updateDoc, serverTimestamp 추가 (수정 기능 대비)
+import { doc, getDoc, Timestamp, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore'; // addDoc 추가
 import { db, auth } from '@/lib/firebase/clientApp';
 import styles from '../../../board.module.css'; // 경로 확인
 import CompanySelectModal from '@/components/admin/CompanySelectModal';
@@ -29,11 +29,10 @@ export default function RequestDetailPage() {
   const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
   // useKakaoTalkSend 훅 사용
-      const { sendKakaoTalk, loading: kakaoLoading, error: kakaoError } = useKakaoTalkSend();
-      const [sentCodeFromServer, setSentCodeFromServer] = useState('');
+    const { sendKakaoTalk, loading: kakaoLoading, error: kakaoError } = useKakaoTalkSend();
+    const [sentCodeFromServer, setSentCodeFromServer] = useState('');
 
   const fetchRequestDetail = useCallback(async () => {
-    // ... (기존 fetchRequestDetail 로직은 동일) ...
     if (!requestId) {
       setError("잘못된 접근입니다. 신청 ID가 없습니다.");
       setLoading(false);
@@ -63,6 +62,7 @@ export default function RequestDetailPage() {
             createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : null, // JS Date 객체
             // ... 만약 data에 다른 Timestamp 필드가 있다면 여기서 .toDate() 처리 ...
             // 예: someOtherTimestamp: data.someOtherTimestamp?.toDate ? data.someOtherTimestamp.toDate() : null,
+            assignedCompanies: data.assignedCompanies || [], // 추가된 필드
         };
         setRequestDetail(processedData);
         // 폼 데이터에는 문자열 등 input value에 적합한 형태로 저장
@@ -98,30 +98,76 @@ export default function RequestDetailPage() {
 
   // 모달에서 다중 선택된 업체 목록을 처리하는 핸들러
   const handleCompanySelected = async (selectedCompanies) => {
-    if (!selectedCompanies || selectedCompanies.length === 0) {
-      alert('업체를 하나 이상 선택해주세요.');
-      return;
-    }
+    if (!selectedCompanies || selectedCompanies.length === 0) {
+      alert('업체를 하나 이상 선택해주세요.');
+      return;
+    }
 
-    try {
-      const docRef = doc(db, COLLECTION_NAME, requestId);
-       
-      // 선택된 업체들의 정보를 {id, name, contactPhone} 형태의 배열로 가공
-      const assignedCompaniesData = selectedCompanies.map(c => ({
-        id: c.id,
-        name: c.name,
+    try {
+      // 1. settings/pointSettings 문서에서 pointsToApply 값 불러오기
+      const settingsDocRef = doc(db, 'settings', 'pointSettings');
+      const settingsDocSnap = await getDoc(settingsDocRef);
+      let pointsToApply = 0;
+
+      if (settingsDocSnap.exists()) {
+        pointsToApply = settingsDocSnap.data().pointsToApply || 0;
+      } else {
+        console.warn("settings/pointSettings 문서가 존재하지 않습니다. 포인트 차감이 적용되지 않습니다.");
+        alert("포인트 설정 정보를 불러올 수 없습니다. 관리자에게 문의하거나 기본값(0)으로 진행됩니다.");
+      }
+
+      const docRef = doc(db, COLLECTION_NAME, requestId);
+       
+      // 선택된 업체들의 정보를 {id, name, contactPhone} 형태의 배열로 가공
+      const assignedCompaniesData = selectedCompanies.map(c => ({
+        id: c.id,
+        name: c.name,
         contactPhone: c.contactPhone, // contactPhone 포함
-      }));
-       
-      await updateDoc(docRef, {
-        assignedCompanies: assignedCompaniesData, // 업체 배열 저장
-        status: '전송' // 상태 변경
-      });
+      }));
+       
+      await updateDoc(docRef, {
+        assignedCompanies: assignedCompaniesData, // 업체 배열 저장
+        status: '전송' // 상태 변경
+      });
 
-      const companyNames = selectedCompanies.map(c => c.name).join(', ');
+      const companyNames = selectedCompanies.map(c => c.name).join(', ');
 
-      // 각 선택된 업체에 알림톡 발송
+      const adminUserUid = auth.currentUser ? auth.currentUser.uid : 'unknown_admin'; // 현재 로그인한 관리자 UID
+
+      // 각 선택된 업체에 알림톡 발송 및 포인트 차감
       for (const company of selectedCompanies) {
+          // 포인트 차감 로직
+          const cleanerDocRef = doc(db, 'cleaners', company.id);
+          const cleanerDocSnap = await getDoc(cleanerDocRef);
+
+          if (cleanerDocSnap.exists()) {
+            const currentPoints = cleanerDocSnap.data().currentPoints || 0;
+            const newPoints = currentPoints - pointsToApply;
+            const deductedAmount = pointsToApply; // 차감될 금액
+
+            await updateDoc(cleanerDocRef, {
+              currentPoints: newPoints < 0 ? 0 : newPoints // 포인트가 음수가 되지 않도록 0으로 설정
+            });
+            console.log(`업체 ${company.name} (ID: ${company.id})의 포인트 ${deductedAmount} 차감 완료. 남은 포인트: ${newPoints < 0 ? 0 : newPoints}`);
+
+            // 포인트 차감 내역을 pointHistory 컬렉션에 저장
+            await addDoc(collection(db, 'pointHistory'), {
+                companyId: company.id,
+                companyName: company.name,
+                points: -deductedAmount, // 차감은 음수로 기록
+                description: '매칭 포인트 자동 차감',
+                createdAt: serverTimestamp(),
+                adminUserUid: adminUserUid,
+                pointsBalanceAfter: newPoints < 0 ? 0 : newPoints,
+                transactionType: '차감',
+            });
+            console.log(`포인트 차감 내역이 pointHistory에 저장되었습니다: ${company.name}, -${deductedAmount} 포인트`);
+
+          } else {
+            console.warn(`업체 ${company.name} (ID: ${company.id}) 문서를 찾을 수 없습니다. 포인트 차감 실패.`);
+          }
+
+          // 알림톡 발송 로직 (기존 코드와 동일)
           if (company.contactPhone) {
               const templateVariables = {
                   '#{성함}': requestDetail.applicantName,
@@ -150,18 +196,17 @@ export default function RequestDetailPage() {
           }
       }
 
-      alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
-       
-      setIsCompanyModalOpen(false); // 모달 닫기
-      fetchRequestDetail(); // 변경된 데이터 다시 불러오기
-    } catch (err) {
-      console.error("Error updating company assignment or sending KakaoTalk: ", err);
-      alert('업체 배정 중 오류가 발생했습니다.');
-    }
-  };
+      alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
+       
+      setIsCompanyModalOpen(false); // 모달 닫기
+      fetchRequestDetail(); // 변경된 데이터 다시 불러오기
+    } catch (err) {
+      console.error("Error updating company assignment or sending KakaoTalk or deducting points: ", err);
+      alert('업체 배정 및 포인트 차감 중 오류가 발생했습니다.');
+    }
+  };
 
   const formatDate = (date, includeTime = false) => {
-    // ... (기존 formatDate 로직은 동일) ...
     if (!date) return 'N/A';
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     if (includeTime) {
@@ -175,7 +220,7 @@ export default function RequestDetailPage() {
         return 'Invalid Date';
     }
   };
-  
+   
   // --- 예시: 수정 기능 관련 핸들러 ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;

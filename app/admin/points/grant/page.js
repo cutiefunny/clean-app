@@ -319,7 +319,7 @@ export default function PointGrantPage() {
         companyId: cleanerId,
         companyName: cleanerName,
         transactionType: type === 'grant' ? '충전' : '회수', // 기록될 타입
-        points: amount,
+        points: type === 'redeem' ? -amount : amount, // '회수'일 경우 amount를 음수로 저장
         pointsBalanceAfter: newBalance,
         description: description,
         createdAt: serverTimestamp()

@@ -20,7 +20,7 @@ import { db } from '@/lib/firebase/clientApp';
 import { useAuth } from '../../../context/AuthContext'; // 인증 컨텍스트
 
 const ITEMS_PER_PAGE = 10;
-const TRANSACTION_TYPES = ["전체", "충전", "차감"];
+const TRANSACTION_TYPES = ["전체", "충전", "차감", "회수"];
 const COLLECTION_NAME = "pointHistory";
 
 export default function PointUsagePage() {
