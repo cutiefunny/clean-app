@@ -25,15 +25,15 @@ export default function RootLayout({ children }) {
 export const metadata = {
   applicationName: "PICKQ",
   title: {
-    default: "PICKQ",
-    template: "PICKQ",
+    default: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
+    template: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
   },
   description: "전국 어디서든 우리 동네 청소 전문가와\n무료 견적 비교하고 비용 걱정은 줄이세요!\n만족도 높은 스마트한 청소, 픽큐에서 시작하세요.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PICKQ",
+    title: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
     // startUpImage: [],
   },
   formatDetection: {
@@ -41,10 +41,10 @@ export const metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "PICKQ",
+    siteName: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
     title: {
-      default: "PICKQ",
-      template: "PICKQ",
+      default: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
+      template: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
     },
     description: "전국 어디서든 우리 동네 청소 전문가와\n무료 견적 비교하고 비용 걱정은 줄이세요!\n만족도 높은 스마트한 청소, 픽큐에서 시작하세요.",
   }
