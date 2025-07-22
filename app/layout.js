@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
 }
 
 export const metadata = {
-  applicationName: "PICKQ",
+  applicationName: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
   title: {
     default: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
     template: "픽큐 - 똑똑한 선택, 빠른 견적 비교",
