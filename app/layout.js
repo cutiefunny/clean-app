@@ -9,6 +9,7 @@ export default function RootLayout({ children }) {
     <html lang="ko">
       <head>
         <meta name="naver-site-verification" content="59e2ea0050231cea4deef4e052fe323fa8e618bb" />
+        <meta name="google-site-verification" content="SNTKn5Ioe7K2k3yQvPm5t4TPdmxFdJniUU9RBcRvz0s" />
       </head>
       <body>
         <DeviceDetector />
