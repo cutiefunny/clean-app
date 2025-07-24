@@ -99,7 +99,7 @@ export default function SentRequestsPage() {
         conditions.push(where('applicantName', '<=', lowerSearchTerm + '\uf8ff'));
       }
 
-      const dataQueryConstraints = [orderBy('requestDate', 'desc'), ...conditions];
+      const dataQueryConstraints = [orderBy('createdAt', 'desc'), ...conditions];
       let dataQuery = query(requestsCollectionRef, ...dataQueryConstraints);
       
       const countQuery = query(requestsCollectionRef, ...conditions);
