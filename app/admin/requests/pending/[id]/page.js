@@ -117,14 +117,14 @@ export default function RequestDetailPage() {
       }
 
       const docRef = doc(db, COLLECTION_NAME, requestId);
-       
+        
       // 선택된 업체들의 정보를 {id, name, contactPhone} 형태의 배열로 가공
       const assignedCompaniesData = selectedCompanies.map(c => ({
         id: c.id,
         name: c.name,
         contactPhone: c.contactPhone, // contactPhone 포함
       }));
-       
+        
       await updateDoc(docRef, {
         assignedCompanies: assignedCompaniesData, // 업체 배열 저장
         status: '전송' // 상태 변경
@@ -197,7 +197,7 @@ export default function RequestDetailPage() {
       }
 
       alert(`'${companyNames}'으로 매칭(전송)이 완료되었습니다.`);
-       
+        
       setIsCompanyModalOpen(false); // 모달 닫기
       fetchRequestDetail(); // 변경된 데이터 다시 불러오기
     } catch (err) {
@@ -220,7 +220,7 @@ export default function RequestDetailPage() {
         return 'Invalid Date';
     }
   };
-   
+    
   // --- 예시: 수정 기능 관련 핸들러 ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -397,8 +397,8 @@ export default function RequestDetailPage() {
           </div>
 
           <div className={styles.buttonContainer} style={{ justifyContent: 'flex-end', marginTop: '30px' }}>
-            <button onClick={handleSelectCompany} className={styles.primaryButton}>
-              적용매장 선택
+            <button onClick={handleSelectCompany} className={styles.primaryButton} disabled={kakaoLoading}> {/* disabled 속성 추가 */}
+              {kakaoLoading ? '전송 중...' : '적용매장 선택'} {/* 로딩 상태에 따라 버튼 텍스트 변경 (선택 사항) */}
             </button>
             <button onClick={handleGoToList} className={styles.secondaryButton}>
               목록
