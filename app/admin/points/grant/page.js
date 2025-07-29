@@ -471,7 +471,11 @@ export default function PointGrantPage() {
       
       {!loading && totalPages > 1 && (
         <div className={styles.paginationContainer}>
-            {/* 페이지네이션 컴포넌트 JSX */}
+          <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={styles.pageButton}>&lt;</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button key={page} onClick={() => setCurrentPage(page)} className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}>{page}</button>
+          ))}
+          <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={styles.pageButton}>&gt;</button>
         </div>
       )}
     </div>
