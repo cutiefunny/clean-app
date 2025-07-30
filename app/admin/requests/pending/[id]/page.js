@@ -12,7 +12,9 @@ import CompanySelectModal from '@/components/admin/CompanySelectModal';
 import useKakaoTalkSend from '@/hooks/useKakaoTalkSend';
 
 // [추가] 입점업체 알림톡 템플릿 ID
-const ALIMTALK_TEMPLATE_ID = 'KA01TP250710072933657OV5TaTz0LKo';
+const ALIMTALK_TEMPLATE_ID = 'KA01TP2507300709257555tfV8uIiyzw';
+// [추가] 잔여 포인트 알림톡 템플릿 ID
+const POINT_ALIMTALK_TEMPLATE_ID = 'KA01TP2507161406118596oJMIaJT6CH';
 
 const COLLECTION_NAME = "requests";
 
@@ -123,6 +125,7 @@ export default function RequestDetailPage() {
         id: c.id,
         name: c.name,
         contactPhone: c.contactPhone, // contactPhone 포함
+        representativeName: c.representativeName || '', // 대표자 이름 추가 (선택 사항)
       }));
         
       await updateDoc(docRef, {
@@ -139,11 +142,14 @@ export default function RequestDetailPage() {
           // 포인트 차감 로직
           const cleanerDocRef = doc(db, 'cleaners', company.id);
           const cleanerDocSnap = await getDoc(cleanerDocRef);
+          let newPoints = 0;
+          let currentPoints = 0;
+          let deductedAmount = 0;
 
           if (cleanerDocSnap.exists()) {
-            const currentPoints = cleanerDocSnap.data().currentPoints || 0;
-            const newPoints = currentPoints - pointsToApply;
-            const deductedAmount = pointsToApply; // 차감될 금액
+            currentPoints = cleanerDocSnap.data().currentPoints || 0;
+            newPoints = currentPoints - pointsToApply;
+            deductedAmount = pointsToApply; // 차감될 금액
 
             await updateDoc(cleanerDocRef, {
               currentPoints: newPoints < 0 ? 0 : newPoints // 포인트가 음수가 되지 않도록 0으로 설정
@@ -180,6 +186,7 @@ export default function RequestDetailPage() {
                   '#{평수}': requestDetail.areaSize ? `${requestDetail.areaSize}평` : '',
                   '#{주거구조}': requestDetail.spaceInfo,
                   '#{문의사항}': requestDetail.inquiryNotes,
+                  '#{잔여포인트}': newPoints < 0 ? 0 : newPoints, // 차감 후 포인트
               };
 
               console.log(`Sending KakaoTalk to ${company.name} (${company.contactPhone}) with template:`, templateVariables);
@@ -190,6 +197,22 @@ export default function RequestDetailPage() {
                   console.log(`알림톡 발송 성공: ${company.name}`, result);
               } else {
                   console.error(`알림톡 발송 실패: ${company.name}`, result);
+              }
+
+              // newPoints가 deductedAmount보다 작을 경우 잔여 포인트 알림톡 발송
+              if (newPoints < deductedAmount) {
+                  const pointTemplateVariables = {
+                      '#{홍길동}': company.representativeName || company.name, // 대표자 이름이 없으면 업체명 사용
+                      '#{원입니다}': newPoints < 0 ? 0 : newPoints,
+                  };
+                  
+                  const pointResult = await sendKakaoTalk(company.contactPhone, POINT_ALIMTALK_TEMPLATE_ID, pointTemplateVariables);
+                  
+                  if (pointResult && pointResult.success) {
+                      console.log(`잔여 포인트 알림톡 발송 성공: ${company.name}`, pointResult);
+                  } else {
+                      console.error(`잔여 포인트 알림톡 발송 실패: ${company.name}`, pointResult);
+                  }
               }
           } else {
               console.warn(`업체 ${company.name}에 연락처 정보가 없습니다. 알림톡을 발송할 수 없습니다.`);

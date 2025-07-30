@@ -250,9 +250,18 @@ export default function PointUsagePage() {
       {!loading && totalPages > 1 && (
         <div className={styles.paginationContainer}>
           <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className={styles.pageButton}>&lt;</button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <button key={page} onClick={() => setCurrentPage(page)} className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}>{page}</button>
-          ))}
+          {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
+            const startPage = Math.max(1, currentPage - 5);
+            const page = startPage + i;
+
+            if (page > totalPages) {
+              return null;
+            }
+
+            return (
+              <button key={page} onClick={() => setCurrentPage(page)} className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}>{page}</button>
+            );
+          })}
           <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className={styles.pageButton}>&gt;</button>
         </div>
       )}
